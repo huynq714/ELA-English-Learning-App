@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "EnglishSpeakingAI",
-    "slug": "EnglishSpeakingAI",
+    "name": "English Learning App",
+    "slug": "english-learning-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "englishspeakingai",
+    "scheme": "elp",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

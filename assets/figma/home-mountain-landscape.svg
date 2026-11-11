@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="375" height="268" viewBox="0 0 375 268" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mountain landscape" clip-path="url(#clip0_0_26)">
+<rect width="375" height="268" fill="#E6FAF2"/>
+<ellipse id="Cloud" opacity="0.65" cx="303" cy="35" rx="60" ry="25" fill="white"/>
+<path id="Distant peaks" d="M-10 135L48 74L109 147L173 93L214 148L297 54L390 130V224H-10V135Z" fill="#B6BBF3"/>
+<path id="Mountain range" d="M0 162L40 129L78 155L120 105L175 180L231 134L282 91L325 147L375 124V271H0V162Z" fill="#7D80DB"/>
+<path id="Mint foothills" d="M0 141L76 207L136 179L209 219L281 148L327 175L375 151V268H0V141Z" fill="#57BBAF"/>
+<path id="Foreground" d="M0 237L60 194L130 238L190 207L238 237L293 189L375 228V268H0V237Z" fill="#38978F"/>
+</g>
+<defs>
+<clipPath id="clip0_0_26">
+<rect width="375" height="268" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,183 @@
+Project English_Learning_App {
+  database_type: 'PostgreSQL'
+  Note: 'Week 3 finalized schema v1.1. 16 tables, 19 foreign keys. SQL adds deferred integrity triggers for completed Quiz and Conversation records.'
+}
+
+Table users {
+  id uuid [pk, not null]
+  email varchar(255) [not null]
+  password_hash text [not null]
+  display_name varchar(100) [not null]
+  status varchar(16) [not null, default: 'ACTIVE']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes { `lower(email)` [unique] }
+}
+Table user_profiles {
+  user_id uuid [pk, not null]
+  english_level varchar(8) [not null, default: 'A1']
+  daily_goal_minutes smallint [not null, default: 15]
+  avatar_url text
+  updated_at timestamptz [not null]
+}
+Table decks {
+  id uuid [pk, not null]
+  title varchar(120) [not null]
+  description text
+  level varchar(8)
+  is_published boolean [not null, default: true]
+  created_at timestamptz [not null]
+}
+Table words {
+  id uuid [pk, not null]
+  headword varchar(120) [not null]
+  ipa varchar(120)
+  meaning_vi text [not null]
+  example_en text
+  example_vi text
+  audio_url text
+  created_at timestamptz [not null]
+}
+Table deck_words {
+  deck_id uuid [not null]
+  word_id uuid [not null]
+  sort_order int [not null, default: 0]
+  indexes {
+    (deck_id, word_id) [pk]
+    (deck_id, sort_order)
+  }
+}
+Table user_word_progress {
+  user_id uuid [not null]
+  word_id uuid [not null]
+  first_seen_at timestamptz [not null]
+  last_studied_at timestamptz [not null]
+  indexes { (user_id, word_id) [pk] }
+}
+Table quiz_attempts {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  deck_id uuid [not null]
+  total_questions smallint [not null, default: 5]
+  correct_count smallint
+  status varchar(16) [not null, default: 'IN_PROGRESS']
+  started_at timestamptz [not null]
+  completed_at timestamptz
+  indexes {
+    (user_id, started_at)
+  }
+}
+Table quiz_answers {
+  id uuid [pk, not null]
+  attempt_id uuid [not null]
+  word_id uuid [not null]
+  question_no smallint [not null]
+  selected_answer text [not null]
+  is_correct boolean [not null]
+  indexes { (attempt_id, question_no) [unique] }
+}
+Table review_cards {
+  user_id uuid [not null]
+  word_id uuid [not null]
+  due_at timestamptz [not null]
+  stability double [not null, default: 0]
+  difficulty double [not null, default: 0]
+  repetitions int [not null, default: 0]
+  lapses int [not null, default: 0]
+  fsrs_state varchar(16) [not null, default: 'NEW']
+  last_reviewed_at timestamptz
+  scheduler_version varchar(32) [not null, default: 'uninitialized']
+  indexes {
+    (user_id, word_id) [pk]
+    (user_id, due_at)
+  }
+}
+Table review_logs {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  word_id uuid [not null]
+  rating varchar(8) [not null]
+  reviewed_at timestamptz [not null]
+  previous_due_at timestamptz
+  next_due_at timestamptz [not null]
+  indexes { (user_id, reviewed_at) }
+}
+Table ipa_sounds {
+  id uuid [pk, not null]
+  symbol varchar(24) [not null, unique]
+  sound_type varchar(12) [not null]
+  description_vi text
+  sample_word varchar(120)
+  audio_url text
+}
+Table pronunciation_attempts {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  ipa_sound_id uuid
+  word_id uuid
+  target_text varchar(255) [not null]
+  assessment_score numeric(5,2)
+  result varchar(16) [not null, default: 'PENDING']
+  feedback_json jsonb
+  audio_object_key text
+  created_at timestamptz [not null]
+  indexes { (user_id, created_at) }
+}
+Table conversation_scenarios {
+  id uuid [pk, not null]
+  title varchar(120) [not null]
+  description text
+  difficulty varchar(8)
+  initial_prompt text [not null]
+  is_active boolean [not null, default: true]
+}
+Table conversation_sessions {
+  id uuid [pk, not null]
+  user_id uuid [not null]
+  scenario_id uuid
+  mode varchar(12) [not null]
+  input_mode varchar(8) [not null, default: 'TEXT']
+  status varchar(16) [not null, default: 'IN_PROGRESS']
+  valid_user_turns int [not null, default: 0]
+  report_json jsonb
+  started_at timestamptz [not null]
+  ended_at timestamptz
+}
+Table conversation_messages {
+  id uuid [pk, not null]
+  session_id uuid [not null]
+  sender varchar(8) [not null]
+  content text [not null]
+  audio_object_key text
+  created_at timestamptz [not null]
+  indexes { (session_id, created_at, id) }
+}
+Table conversation_turn_feedback {
+  id uuid [pk, not null]
+  message_id uuid [not null, unique]
+  grammar_feedback text
+  vocabulary_feedback text
+  suggested_reply text
+  feedback_json jsonb
+  created_at timestamptz [not null]
+}
+
+Ref: users.id - user_profiles.user_id [delete: cascade]
+Ref: deck_words.deck_id > decks.id [delete: cascade]
+Ref: deck_words.word_id > words.id [delete: restrict]
+Ref: user_word_progress.user_id > users.id [delete: cascade]
+Ref: user_word_progress.word_id > words.id [delete: restrict]
+Ref: quiz_attempts.user_id > users.id [delete: cascade]
+Ref: quiz_attempts.deck_id > decks.id [delete: restrict]
+Ref: quiz_answers.attempt_id > quiz_attempts.id [delete: cascade]
+Ref: quiz_answers.word_id > words.id [delete: restrict]
+Ref: review_cards.user_id > users.id [delete: cascade]
+Ref: review_cards.word_id > words.id [delete: restrict]
+Ref: review_logs.(user_id, word_id) > review_cards.(user_id, word_id) [delete: cascade]
+Ref: pronunciation_attempts.user_id > users.id [delete: cascade]
+Ref: pronunciation_attempts.ipa_sound_id > ipa_sounds.id [delete: set null]
+Ref: pronunciation_attempts.word_id > words.id [delete: set null]
+Ref: conversation_sessions.user_id > users.id [delete: cascade]
+Ref: conversation_sessions.scenario_id > conversation_scenarios.id [delete: restrict]
+Ref: conversation_messages.session_id > conversation_sessions.id [delete: cascade]
+Ref: conversation_turn_feedback.message_id - conversation_messages.id [delete: cascade]

@@ -7,6 +7,7 @@ node_modules/
 .expo/
 dist/
 web-build/
+.artifacts/
 expo-env.d.ts
 
 # Native
@@ -31,7 +32,14 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
+!.env.example
 .env*.local
+
+# Backend build output and local handover bundle
+/backend/target/
+/English_Learning_Week3_Demo_Handover.zip
 
 # typescript
 *.tsbuildinfo

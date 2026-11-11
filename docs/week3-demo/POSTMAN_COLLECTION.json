@@ -1,0 +1,81 @@
+{
+  "info": {
+    "_postman_id": "english-learning-week3-demo",
+    "name": "English Learning App - Week 3 Demo",
+    "description": "API thực tế đọc từ các Controller/DTO hiện tại. Dev write endpoints chỉ có với Spring profile local; không có Auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8080" },
+    { "key": "deckId", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [{
+        "name": "GET health",
+        "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/health" }
+      }]
+    },
+    {
+      "name": "Vocabulary Decks",
+      "item": [
+        { "name": "GET published decks", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/decks" } },
+        { "name": "GET published deck by ID", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/decks/{{deckId}}" } },
+        {
+          "name": "POST dev create deck (local profile only)",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "if (pm.response.code === 201) {",
+              "  const body = pm.response.json();",
+              "  if (body.id) pm.environment.set('deckId', body.id);",
+              "}"
+            ] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman Demo Deck\",\n  \"description\": \"Deck dùng cho buổi demo\",\n  \"level\": \"A1\",\n  \"isPublished\": true\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/dev/decks"
+          }
+        },
+        {
+          "name": "PATCH dev update deck (local profile only)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman Demo Deck Updated\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/dev/decks/{{deckId}}"
+          }
+        },
+        { "name": "DELETE dev soft-delete deck (local profile only)", "request": { "method": "DELETE", "url": "{{baseUrl}}/api/v1/dev/decks/{{deckId}}" } }
+      ]
+    },
+    {
+      "name": "User Profile (dev/local only)",
+      "item": [
+        { "name": "GET Profile", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/dev/users/{{userId}}/profile" } },
+        {
+          "name": "PUT create or replace Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"englishLevel\": \"A2\",\n  \"dailyGoalMinutes\": 20,\n  \"avatarUrl\": \"https://example.test/avatar.png\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/dev/users/{{userId}}/profile"
+          }
+        },
+        {
+          "name": "PATCH Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dailyGoalMinutes\": 45\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/dev/users/{{userId}}/profile"
+          }
+        }
+      ]
+    }
+  ]
+}

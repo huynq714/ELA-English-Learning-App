@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="230" height="180" viewBox="0 0 230 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="AI assistant illustration">
+<ellipse id="Backdrop" cx="115.5" cy="102.5" rx="102.5" ry="62.5" fill="#EEEDFF"/>
+<circle id="Accent bubble" cx="45" cy="26" r="14" fill="#E6FAF2"/>
+<circle id="Accent bubble_2" cx="195.5" cy="39.5" r="7.5" fill="#5DD6B0"/>
+<rect id="Antenna" x="111" y="29" width="5" height="24" rx="2.5" fill="#4F46E5"/>
+<circle id="Antenna tip" cx="113.5" cy="29.5" r="7.5" fill="#5DD6B0"/>
+<rect id="Head" x="63" y="47" width="104" height="73" rx="30" fill="#4F46E5"/>
+<rect id="Face panel" x="75" y="59" width="80" height="47" rx="20" fill="#3730A3"/>
+<ellipse id="Eye" cx="97" cy="81" rx="6" ry="9" fill="#5DD6B0"/>
+<ellipse id="Eye_2" cx="133" cy="81" rx="6" ry="9" fill="#5DD6B0"/>
+<path id="Body" d="M108 126.5H122C130.56 126.5 137.5 133.44 137.5 142V144C137.5 152.56 130.56 159.5 122 159.5H108C99.4396 159.5 92.5 152.56 92.5 144V142C92.5 133.44 99.4396 126.5 108 126.5Z" fill="white" stroke-width="3" stroke="#4F46E5"/>
+<circle id="Power light" cx="115" cy="140" r="6" fill="#5DD6B0"/>
+<ellipse id="Hand" cx="67.8435" cy="145.015" rx="8.5" ry="11.5" transform="rotate(25 67.8435 145.015)" fill="#4F46E5"/>
+<ellipse id="Hand_2" cx="161.564" cy="133.83" rx="8.5" ry="11.5" transform="rotate(-25 161.564 133.83)" fill="#4F46E5"/>
+<ellipse id="Shadow" cx="116.5" cy="169.5" rx="34.5" ry="3.5" fill="#EEEDFF"/>
+</g>
+</svg>
