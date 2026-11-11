@@ -12,10 +12,37 @@
 
 ## 1. Yêu cầu
 
-- Windows 10/11, Git.
-- Java 21 và Maven 3.9+ (`java -version`, `mvn -version`).
-- PostgreSQL 18.x + pgAdmin 4.
-- Postman để chạy collection có sẵn.
+- **Cách nhanh (khuyến nghị):** Git và Docker Desktop đang chạy. Không cần cài Java, Maven hay PostgreSQL trực tiếp trên máy.
+- **Cách cài thủ công:** Windows 10/11, Java 21, Maven 3.9+, PostgreSQL 18.x và pgAdmin 4.
+- Postman là tùy chọn; các API cũng có thể gọi từ PowerShell.
+
+## 2. Chạy nhanh bằng Docker Compose
+
+Sau khi cài Docker Desktop một lần, mỗi thành viên có thể tải project và chạy Backend + PostgreSQL bằng các lệnh PowerShell sau:
+
+```powershell
+git clone https://github.com/huynq714/ELA-English-Learning-App.git
+cd ELA-English-Learning-App
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+docker compose up --build
+```
+
+Lần chạy đầu Docker tải image, build Backend, tạo database mới và nạp `database/week3/schema.sql`; đợi log cho biết Spring Boot đã khởi động. Kiểm tra ở một PowerShell khác:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8080/api/v1/health
+Invoke-RestMethod http://127.0.0.1:8080/api/v1/decks
+```
+
+Sau đó import Postman collection/environment trong `docs/week3-demo/` để thử các luồng ở mục Deck và Profile dưới đây. Có thể dùng PowerShell thay cho Postman.
+
+Compose chỉ mở API trên `127.0.0.1:8080` và PostgreSQL trên `127.0.0.1:5433`; cổng 5433 tránh đụng PostgreSQL native thường dùng cổng 5432. Nếu cổng bị chiếm, sửa `POSTGRES_PORT` hoặc `API_PORT` trong `.env`. Mật khẩu mẫu trong `.env.example` chỉ dùng cho database demo local; file `.env` cá nhân bị Git ignore. Không dùng bộ cấu hình này cho production.
+
+Database nằm trong Docker volume nên `docker compose down` dừng dịch vụ nhưng giữ dữ liệu. **Không chạy `docker compose down -v` nếu còn cần dữ liệu**, vì tùy chọn `-v` xóa volume database. Schema init chỉ chạy tự động khi tạo volume/database lần đầu.
+
+> Cấu hình mặc định bind loopback để các route `/dev` chưa có xác thực không bị mở lên mạng. Nó phù hợp để test API trên chính laptop bằng Postman/PowerShell; Expo Go trên điện thoại thật không truy cập được loopback của laptop. Không đổi bind sang LAN nếu chưa tắt các endpoint ghi `/dev`.
+
+## 3. Chuẩn bị PostgreSQL thủ công (không dùng Docker)
 
 ## 2. Chuẩn bị PostgreSQL (mỗi thành viên làm một lần)
 
@@ -33,7 +60,7 @@
 
    Kết quả kỳ vọng: `english_learning_db`, `UTF8`, `16` bảng. Xem [`docs/week3-demo/README.md`](docs/week3-demo/README.md) để biết hướng dẫn đầy đủ và các truy vấn kiểm tra.
 
-## 3. Chạy Backend (PowerShell)
+## 4. Chạy Backend thủ công (PowerShell)
 
 Mở PowerShell tại thư mục dự án:
 
@@ -58,7 +85,7 @@ Invoke-RestMethod http://127.0.0.1:8080/api/v1/decks
 
 Health trả `UP`; danh sách Deck có thể là `[]` nếu chưa có Deck publish. Health chỉ xác nhận ứng dụng phản hồi; gọi API Deck mới kiểm tra luồng tới database.
 
-## 4. Thử Deck CRUD bằng Postman
+## 5. Thử Deck CRUD bằng Postman
 
 Import hai file `docs/week3-demo/POSTMAN_COLLECTION.json` và `docs/week3-demo/POSTMAN_ENVIRONMENT.json`, chọn environment **English Learning App - Local Demo**, đặt `baseUrl` thành `http://127.0.0.1:8080`. Các request đã có sẵn trong collection.
 
@@ -87,7 +114,7 @@ FROM decks ORDER BY created_at DESC LIMIT 10;
 
 Nếu `/api/v1/dev/decks` trả 404, kiểm tra `SPRING_PROFILES_ACTIVE=local` trong đúng cửa sổ PowerShell đang chạy Backend rồi khởi động lại.
 
-## 5. Thử Profile bằng Postman
+## 6. Thử Profile bằng Postman
 
 Profile cần `userId` đã tồn tại trong `users`. Hiện chưa có API đăng ký User, nên mỗi thành viên cần chọn User test có sẵn hoặc tạo một User test bằng pgAdmin.
 
@@ -134,14 +161,14 @@ FROM user_profiles WHERE user_id = '<dán userId của bạn>';
 
 **Lưu ý:** Profile test route nhận UUID trực tiếp, không chứng minh danh tính người dùng. Chỉ dùng profile `local` trên `127.0.0.1`; chưa có API xóa Profile/User hoặc Authentication.
 
-## 6. Kiểm tra mã nguồn và Postman
+## 7. Kiểm tra mã nguồn và Postman
 
 - Chạy test Backend: `cd backend; mvn clean test`.
 - Collection/environment: [`docs/week3-demo/POSTMAN_COLLECTION.json`](docs/week3-demo/POSTMAN_COLLECTION.json), [`docs/week3-demo/POSTMAN_ENVIRONMENT.json`](docs/week3-demo/POSTMAN_ENVIRONMENT.json).
 - Tài liệu chuẩn bị demo, các truy vấn và xử lý lỗi: [`docs/week3-demo/README.md`](docs/week3-demo/README.md).
 - Schema: [`database/week3/schema.sql`](database/week3/schema.sql); ERD: [`database/week3/English_Learning_ERD.dbml`](database/week3/English_Learning_ERD.dbml).
 
-## 7. Chạy ứng dụng Expo (tùy chọn)
+## 8. Chạy ứng dụng Expo (tùy chọn)
 
 ```powershell
 npm install
