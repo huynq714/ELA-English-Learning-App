@@ -5,8 +5,8 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 ## Backend hiện có
 
 - Deck: đọc Deck đã publish; tạo, cập nhật và soft-delete Deck trong profile `local`.
-- Profile: đọc/tạo/cập nhật Profile cho User đã tồn tại.
-- Chưa có đăng ký/đăng nhập hoặc Authentication/RBAC. Các API `/api/v1/dev/...` nhận ID trực tiếp, chỉ dùng local trên máy, không mở ra mạng hoặc production.
+- Auth và Profile: đăng ký, đăng nhập bằng email, JWT và cập nhật hồ sơ của tài khoản đang đăng nhập. Xem [kịch bản demo Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
+- Các API `/api/v1/dev/...` chỉ phục vụ Backend chạy native với profile `local` và yêu cầu đến từ loopback.
 - Profile chưa có API DELETE. Deck DELETE đặt `is_published=false`, không xóa hàng khỏi database.
 - Quiz, FSRS, IPA và AI Conversation hiện có thiết kế database, chưa có REST API hoàn chỉnh.
 
@@ -25,6 +25,7 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 2. Tạo database `english_learning_db`, encoding UTF8, nếu database chưa có.
 3. Trong Query Tool của database mới/trống, mở và chạy [`database/week3/schema.sql`](database/week3/schema.sql). Script tạo extension `pgcrypto`, 16 bảng, FK, constraint và trigger.
 4. Không chạy lại schema trên database đã có bảng/dữ liệu; không drop database có dữ liệu cần giữ.
+5. Với database mới, chạy thêm [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) một lần để Backend xác thực schema.
 
 Kiểm tra:
 
@@ -46,12 +47,16 @@ cd "<đường-dẫn-project>\backend"
 $env:DB_USERNAME = "postgres"
 $secure = Read-Host "Mật khẩu PostgreSQL" -AsSecureString
 $env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $secure).Password
+$key = [byte[]]::new(32)
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($key) } finally { $rng.Dispose() }
+$env:AUTH_JWT_SECRET = [Convert]::ToBase64String($key)
 $env:SPRING_PROFILES_ACTIVE = "local"
 mvn clean test
 mvn spring-boot:run
 ```
 
-Nhập mật khẩu trong prompt trên máy cá nhân; không ghi mật khẩu vào source hoặc chat. Backend mặc định bind `127.0.0.1:8080`. Để dừng server nhấn `Ctrl+C`.
+Nhập mật khẩu trong prompt trên máy cá nhân. Backend mặc định bind `127.0.0.1:8080`. Để dừng server nhấn `Ctrl+C`. Khi chạy lại trong cùng cửa sổ, giữ nguyên `AUTH_JWT_SECRET` để các phiên hiện có tiếp tục hoạt động.
 
 ## Chọn B — Docker Compose
 
@@ -66,6 +71,10 @@ Nếu repo đã được clone sẵn, chỉ cần mở PowerShell ở thư mục
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+$key = [byte[]]::new(32)
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($key) } finally { $rng.Dispose() }
+$env:AUTH_JWT_SECRET = [Convert]::ToBase64String($key)
 docker compose up --build
 ```
 
@@ -77,7 +86,7 @@ Docker tự build Backend, tạo PostgreSQL và nạp schema khi khởi tạo vo
 - Nếu port 8080 hoặc 5433 bị chiếm, đổi `API_PORT` hoặc `POSTGRES_PORT` trong `.env`.
 - `docker compose down` dừng app và giữ database. **Không dùng `docker compose down -v` nếu cần giữ dữ liệu**, vì `-v` xóa volume.
 
-Các cổng chỉ bind vào loopback để bảo vệ những endpoint dev chưa có xác thực. Vì vậy dùng Postman/PowerShell trên cùng laptop; Expo Go trên điện thoại thật không truy cập API Docker mặc định.
+Compose công bố các cổng trên loopback và dùng các endpoint Auth/Profile thật. Để chạy các ví dụ `/dev` Week 3, chọn Backend native ở trên. Để demo bằng Expo Go trên điện thoại, dùng cấu hình mạng LAN trong [kịch bản Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
 
 ## Kiểm tra Backend
 

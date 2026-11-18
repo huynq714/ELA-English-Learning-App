@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { ActivityCard, AppCard, AppText, Asset, Screen } from '@/components/ui';
 import { learningSummary } from '@/data/demo';
+import { useSession } from '@/features/auth/view-model/session-context';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
@@ -24,12 +25,14 @@ function StatisticCard({ value, label, icon, onPress }:
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
+  const { state } = useSession();
   const landscapeWidth = Math.min(width, 480);
+  if (state.status !== 'signed-in') return null;
   return <Screen testID="screen-home" footer={<BottomNavigation active="home" />}>
     <Asset source={assets.mountainLandscape} width={landscapeWidth} height={landscapeWidth * 268 / 375}
       style={styles.landscape} />
     <View style={styles.content}>
-      <AppText size={19} weight="bold" accessibilityRole="header">Chào buổi sáng, {learningSummary.learner}! ☀️</AppText>
+      <AppText size={19} weight="bold" accessibilityRole="header">Chào buổi sáng, {state.user.displayName}! ☀️</AppText>
       <View style={styles.breathingRoom} />
       <AppCard style={styles.streak}>
         <View style={styles.streakIcon}><Asset source={assets.flame} width={34} /></View>

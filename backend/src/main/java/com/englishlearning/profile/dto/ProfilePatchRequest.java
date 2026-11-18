@@ -1,6 +1,7 @@
 package com.englishlearning.profile.dto;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -18,6 +19,11 @@ public class ProfilePatchRequest {
     private boolean englishLevelProvided;
     private boolean dailyGoalMinutesProvided;
     private boolean avatarUrlProvided;
+
+    @JsonAnySetter
+    public void rejectUnknownField(String field, Object value) {
+        throw new IllegalArgumentException("Unsupported profile field");
+    }
 
     @JsonSetter("englishLevel")
     public void setEnglishLevel(String englishLevel) {

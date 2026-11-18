@@ -1,5 +1,6 @@
 package com.englishlearning.common.exception;
 
+import com.englishlearning.auth.AuthException;
 import com.englishlearning.vocabulary.service.DeckNotFoundException;
 import com.englishlearning.profile.service.ProfileNotFoundException;
 import com.englishlearning.profile.service.UserNotFoundException;
@@ -12,6 +13,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ApiError> handleAuth(AuthException exception) {
+        return ResponseEntity.status(exception.status()).body(new ApiError(exception.code(), exception.getMessage()));
+    }
 
     @ExceptionHandler(DeckNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(DeckNotFoundException exception) {

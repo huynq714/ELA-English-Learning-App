@@ -7,11 +7,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
@@ -42,13 +42,17 @@ public class UserProfile {
     protected UserProfile() {
     }
 
+    public static UserProfile createDefault(User user) {
+        return create(user, "A1", 15, null);
+    }
+
     public static UserProfile create(User user, String englishLevel, int dailyGoalMinutes, String avatarUrl) {
         UserProfile profile = new UserProfile();
         profile.user = user;
         profile.englishLevel = englishLevel;
         profile.dailyGoalMinutes = (short) dailyGoalMinutes;
         profile.avatarUrl = avatarUrl;
-        profile.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
+        profile.updatedAt = timestamp();
         return profile;
     }
 
@@ -62,12 +66,11 @@ public class UserProfile {
         if (updateAvatar) {
             this.avatarUrl = avatarUrl;
         }
-        this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
+        this.updatedAt = timestamp();
     }
 
-    @PreUpdate
-    void updateTimestamp() {
-        this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
+    private static OffsetDateTime timestamp() {
+        return OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
     }
 
     public UUID getUserId() {

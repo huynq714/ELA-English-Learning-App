@@ -53,10 +53,10 @@ export function AppHeader({ title, trailing }: { title: string; trailing?: React
   </View>;
 }
 
-export function PrimaryButton({ title, onPress, style, testID }:
-  { title: string; onPress: () => void; style?: StyleProp<ViewStyle>; testID?: string }) {
-  return <Pressable accessibilityRole="button" onPress={onPress} testID={testID}
-    style={({ pressed }) => [styles.primary, style, pressed && styles.pressed]}>
+export function PrimaryButton({ title, onPress, style, testID, disabled = false }:
+  { title: string; onPress: () => void; style?: StyleProp<ViewStyle>; testID?: string; disabled?: boolean }) {
+  return <Pressable accessibilityRole="button" onPress={onPress} testID={testID} disabled={disabled}
+    accessibilityState={{ disabled }} style={({ pressed }) => [styles.primary, style, (disabled || pressed) && styles.pressed]}>
     <AppText size={16} weight="semibold" color={colors.surface} style={styles.centerText}>{title}</AppText>
   </Pressable>;
 }

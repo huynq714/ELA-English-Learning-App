@@ -25,7 +25,7 @@ services:
     environment:
       SERVER_ADDRESS: 0.0.0.0
       SERVER_PORT: 8080
-      SPRING_PROFILES_ACTIVE: local
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?Set a random base64 JWT secret in .env}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Copy .env.example to .env first}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?Copy .env.example to .env first}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env first}

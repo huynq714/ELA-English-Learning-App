@@ -1,5 +1,7 @@
 package com.englishlearning.profile.service;
 
+import com.englishlearning.profile.dto.CurrentProfilePatchRequest;
+import com.englishlearning.profile.dto.CurrentProfileResponse;
 import com.englishlearning.profile.dto.ProfilePatchRequest;
 import com.englishlearning.profile.dto.ProfilePutRequest;
 import com.englishlearning.profile.dto.ProfileResponse;
@@ -12,12 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-/** Accepts a user id from the dev controller; production callers must source it from Authentication. */
+/** The current-user controller supplies the authenticated account ID. */
 @Service
 public class ProfileService {
-
-    private static final String DEFAULT_LEVEL = "A1";
-    private static final int DEFAULT_DAILY_GOAL = 15;
 
     private final UserRepository userRepository;
     private final UserProfileRepository profileRepository;
@@ -53,6 +52,24 @@ public class ProfileService {
     /** PATCH initializes missing profiles from the database defaults, then applies supplied fields. */
     @Transactional
     public ProfileResponse patch(UUID userId, ProfilePatchRequest request) {
+        return applyPatch(requireUser(userId), request);
+    }
+
+    @Transactional
+    public CurrentProfileResponse patchCurrent(UUID userId, CurrentProfilePatchRequest request) {
+        var user = requireUser(userId);
+        if (request.isAvatarUrlProvided()) AvatarImage.validate(request.getAvatarUrl());
+        if (request.isDisplayNameProvided()) {
+            String name = request.getDisplayName();
+            if (name == null || name.isBlank()) {
+                throw new IllegalArgumentException("displayName cannot be blank");
+            }
+            user.changeDisplayName(name.strip());
+        }
+        return CurrentProfileResponse.from(applyPatch(user, request), user.getDisplayName());
+    }
+
+    private ProfileResponse applyPatch(User user, ProfilePatchRequest request) {
         if (!request.hasChanges()) {
             throw new IllegalArgumentException("At least one profile field is required");
         }
@@ -63,9 +80,8 @@ public class ProfileService {
             throw new IllegalArgumentException("dailyGoalMinutes cannot be null");
         }
 
-        User user = requireUser(userId);
-        UserProfile profile = profileRepository.findById(userId)
-                .orElseGet(() -> UserProfile.create(user, DEFAULT_LEVEL, DEFAULT_DAILY_GOAL, null));
+        UserProfile profile = profileRepository.findById(user.getId())
+                .orElseGet(() -> UserProfile.createDefault(user));
         profile.update(
                 request.getEnglishLevel(),
                 request.getDailyGoalMinutes(),
