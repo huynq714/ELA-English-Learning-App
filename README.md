@@ -2,6 +2,8 @@
 
 README này hướng dẫn thành viên trong nhóm chạy Backend và thử Deck/Profile trên Windows. Chọn **một** cách chạy PostgreSQL bên dưới: cài PostgreSQL trực tiếp hoặc dùng Docker. Hai cách đều chạy cùng schema và cùng API.
 
+Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư mục dự án. Thành viên mới có thể dùng [Docker Compose](#chọn-b--docker-compose) để tự tạo PostgreSQL và nạp sẵn **3 Deck A1 và 3 Deck A2, mỗi Deck 15 từ**. Mỗi bạn đăng ký tài khoản test trên database của mình sau khi khởi động.
+
 ## Backend hiện có
 
 - Danh mục Deck: đọc bằng JWT, lọc theo trình độ trong Profile. Xem [hướng dẫn sáu Deck A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md). Tạo, cập nhật và soft-delete Deck demo qua profile `local`.
@@ -70,20 +72,27 @@ git clone https://github.com/huynq714/ELA-English-Learning-App.git
 cd ELA-English-Learning-App
 ```
 
-Nếu repo đã được clone sẵn, chỉ cần mở PowerShell ở thư mục gốc repo. Trong cả hai trường hợp, chạy tiếp:
+Mở PowerShell ở thư mục gốc repo. Khối lệnh sau tạo `.env` nếu cần và lưu khóa JWT ngẫu nhiên trên máy để dùng lại khi khởi động:
 
 ```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-$key = [byte[]]::new(32)
-$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-try { $rng.GetBytes($key) } finally { $rng.Dispose() }
-$env:AUTH_JWT_SECRET = [Convert]::ToBase64String($key)
-docker compose up --build
+$envPath = Join-Path (Get-Location) '.env'
+if (-not (Test-Path $envPath)) { Copy-Item .env.example $envPath }
+$settings = [IO.File]::ReadAllText($envPath)
+if ($settings -notmatch '(?m)^AUTH_JWT_SECRET=[^\r\n]*\S[^\r\n]*\r?$') {
+  $key = [byte[]]::new(32)
+  $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+  try { $rng.GetBytes($key) } finally { $rng.Dispose() }
+  $jwt = [Convert]::ToBase64String($key)
+  $settings = $settings -replace '(?m)^AUTH_JWT_SECRET=[^\r\n]*(\r?\n|$)', ''
+  [IO.File]::WriteAllText($envPath, $settings.TrimEnd() + "`r`nAUTH_JWT_SECRET=$jwt`r`n", [Text.UTF8Encoding]::new($false))
+}
+docker compose up --build -d
+docker compose logs -f backend
 ```
 
 Docker tự build Backend, tạo PostgreSQL và nạp schema khi khởi tạo volume database lần đầu. Chờ log báo Spring Boot đã khởi động. Bộ cấu hình demo dùng database riêng trong Docker; không cần sửa `application.properties`.
 
-Volume Docker mới tự nạp sáu Deck khi khởi tạo. Với volume có sẵn, áp dụng bản cập nhật theo [hướng dẫn nạp PostgreSQL](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql), dùng cổng `5433` và username trong `.env`.
+Volume Docker mới tự nạp sáu Deck khi khởi tạo. Với volume có sẵn từ phiên bản cũ, xem [cập nhật volume giữ dữ liệu](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#cập-nhật-volume-docker-đã-có-dữ-liệu).
 
 - API: `http://127.0.0.1:8080`
 - PostgreSQL từ pgAdmin: host `127.0.0.1`, port `5433`, database/user/password xem trong file `.env` vừa tạo.
@@ -91,7 +100,28 @@ Volume Docker mới tự nạp sáu Deck khi khởi tạo. Với volume có sẵ
 - Nếu port 8080 hoặc 5433 bị chiếm, đổi `API_PORT` hoặc `POSTGRES_PORT` trong `.env`.
 - `docker compose down` dừng app và giữ database. **Không dùng `docker compose down -v` nếu cần giữ dữ liệu**, vì `-v` xóa volume.
 
-Compose công bố các cổng trên loopback và dùng các endpoint Auth/Profile thật. Để chạy các ví dụ `/dev` Week 3, chọn Backend native ở trên. Để demo bằng Expo Go trên điện thoại, dùng cấu hình mạng LAN trong [kịch bản Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
+Compose dùng các endpoint Auth/Profile thật. Để chạy các ví dụ `/dev` Week 3, chọn Backend native ở trên.
+
+### Chạy Expo Go trên điện thoại với Docker
+
+Kết nối laptop và điện thoại vào cùng Wi-Fi. Mở PowerShell ở thư mục gốc, chạy `ipconfig`, rồi nhập IPv4 của **laptop** khi được hỏi. Đoạn lệnh công bố riêng API trên địa chỉ Wi-Fi đó. PostgreSQL vẫn truy cập qua localhost.
+
+```powershell
+$laptopIp = Read-Host 'IPv4 cua laptop tren Wi-Fi'
+$env:API_BIND_ADDRESS = $laptopIp
+docker compose up -d backend
+$env:EXPO_PUBLIC_API_BASE_URL = "http://${laptopIp}:8080"
+Invoke-RestMethod "$env:EXPO_PUBLIC_API_BASE_URL/api/v1/health"
+```
+
+Khi Health trả `UP`, dùng Node.js 22 LTS từ 22.13, cài dependencies theo lockfile và mở Expo. Nếu đã đổi `API_PORT` trong `.env`, dùng cổng đó trong URL.
+
+```powershell
+npm.cmd ci
+npx.cmd expo start --go --lan --port 0
+```
+
+Quét QR trong Expo Go, đăng ký tài khoản test, chọn A1 hoặc A2 và mở **Từ vựng** để kiểm tra ba Deck của cấp đã chọn.
 
 ## Kiểm tra Backend
 

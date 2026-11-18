@@ -23,7 +23,7 @@ Từ PowerShell tại thư mục gốc, dùng lệnh dưới đây cho PostgreSQ
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\database\week4\import\apply_topic_decks.ps1 -Apply
 ```
 
-Script kiểm tra schema Tuần 3 và migrations V1_2/V1_3, tạo bản sao lưu trong `.artifacts/week4-topic-backups/`, chạy dry-run đến `ROLLBACK` rồi mới nạp V1_4 và dữ liệu trong một transaction. Bỏ `-Apply` để chỉ chạy dry-run. Với volume Docker đã dùng, thêm `-Port 5433 -Username english_learning_dev` hoặc các giá trị trong cấu hình Docker của bạn. Volume Docker mới tự nạp migration và dữ liệu khi khởi tạo.
+Script kiểm tra schema Tuần 3 và migrations V1_2/V1_3, tạo bản sao lưu trong `.artifacts/week4-topic-backups/`, chạy dry-run đến `ROLLBACK` rồi mới nạp V1_4 và dữ liệu trong một transaction. Bỏ `-Apply` để chỉ chạy dry-run. Volume Docker mới tự nạp migration và dữ liệu khi khởi tạo.
 
 Để chạy bằng pgAdmin, sao lưu database, mở Query Tool đúng database và chạy [migration V1_4](../../database/week4/migrations/V1_4__topic_deck_catalog.sql). Mở [script import](../../database/week4/import/data/apply_topic_decks.sql), đổi `COMMIT;` cuối file thành `ROLLBACK;` để dry-run. Khi thấy đủ sáu dòng với 15 từ mỗi Deck, mở lại file gốc rồi chạy với `COMMIT;`. Sau đó khởi động lại Backend để Hibernate xác thực schema mới.
 
@@ -41,6 +41,42 @@ ORDER BY d.level, d.topic;
 ```
 
 Kết quả mong đợi gồm 3 dòng A1 và 3 dòng A2. Mỗi dòng có `words = verified_words = 15` và thứ tự 1–15. Catalog dùng `topic_key` định danh Deck và `import_key` định danh từ. Các Deck cũ nằm ngoài danh mục nhưng các hàng, liên kết và lịch sử của chúng vẫn được lưu.
+
+### Cập nhật volume Docker đã có dữ liệu
+
+Docker chạy SQL khởi tạo khi volume trống. Nếu volume cũ đã có V1_2 và V1_3, chạy từ PowerShell ở thư mục gốc để sao lưu rồi áp dụng V1_4 và danh mục. Đổi username hoặc tên database trong đoạn lệnh nếu bạn đã tùy chỉnh chúng trong `.env`. Nếu thiếu V1_2 hoặc V1_3, dùng bản sao lưu rồi áp dụng các migration còn thiếu theo thứ tự trước V1_4. [Tài liệu image PostgreSQL](https://github.com/docker-library/docs/blob/master/postgres/README.md)
+
+```powershell
+docker compose up -d --wait db
+if ($LASTEXITCODE -ne 0) { throw 'PostgreSQL chưa khởi động được' }
+
+$pg = @('-U', 'english_learning_dev', '-d', 'english_learning_db')
+$backupDir = '.artifacts/week4-topic-backups'
+New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
+$backupName = 'english_learning_db-' + (Get-Date -Format 'yyyyMMdd-HHmmssfff') + '.backup'
+docker compose exec -T db pg_dump @pg -Fc -f "/tmp/$backupName"
+if ($LASTEXITCODE -ne 0) { throw 'Sao lưu thất bại' }
+docker compose exec -T db pg_restore -l "/tmp/$backupName" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'Không đọc được bản sao lưu' }
+docker compose cp "db:/tmp/$backupName" "$backupDir/$backupName"
+if ($LASTEXITCODE -ne 0) { throw 'Không sao chép được bản sao lưu về máy' }
+
+$migration = Get-Content -Raw -Encoding UTF8 'database/week4/migrations/V1_4__topic_deck_catalog.sql'
+$catalogue = Get-Content -Raw -Encoding UTF8 'database/week4/import/data/apply_topic_decks.sql'
+$sql = "BEGIN;`n" + ($migration -replace '(?m)^BEGIN;\s*|COMMIT;\s*$', '') +
+  "`n" + ($catalogue -replace '(?m)^BEGIN;\s*|COMMIT;\s*$', '')
+$previousEncoding = $OutputEncoding
+try {
+  $OutputEncoding = [Text.UTF8Encoding]::new($false)
+  ($sql + "`nROLLBACK;") | docker compose exec -T db psql @pg -X -v ON_ERROR_STOP=1 -f -
+  if ($LASTEXITCODE -ne 0) { throw 'Dry-run thất bại' }
+  ($sql + "`nCOMMIT;") | docker compose exec -T db psql @pg -X -v ON_ERROR_STOP=1 -f -
+  if ($LASTEXITCODE -ne 0) { throw 'Cập nhật danh mục thất bại' }
+} finally {
+  $OutputEncoding = $previousEncoding
+}
+docker compose up -d --build backend
+```
 
 ## Kiểm thử API và app
 
@@ -62,7 +98,8 @@ Kết quả mong đợi gồm 3 dòng A1 và 3 dòng A2. Mỗi dòng có `words 
 | Hồi quy Auth và Profile | PASS qua HTTP và PostgreSQL cô lập, gồm cập nhật Profile, đổi mật khẩu và đọc danh mục sau đăng ký. |
 | Tìm kiếm kết hợp chủ đề, lật thẻ, đổi Profile A1 → A2 trong cùng phiên | PASS trên React Native Web với Edge và API thật |
 | Maven, import builder, TypeScript, ESLint, Expo web export | PASS với 23 test Maven và 5 test import builder |
-| Cấu hình Docker Compose và bộ SQL khởi tạo database trống | PASS kiểm tra cấu hình và chạy bộ SQL trên PostgreSQL cô lập. Chưa chạy toàn bộ Docker stack. |
+| Docker Compose với volume mới | PASS. PostgreSQL tự nạp 6 Deck, 90 từ và 90 liên kết. Backend trả `UP`, các tài khoản A1/A2 mới đăng ký mỗi tài khoản nhận đúng 3 Deck của mình. |
+| Cập nhật volume Docker cũ | PASS trên volume kiểm thử tạo từ cấu hình V1_3. Sao lưu thành công, dry-run rollback và lần nạp thật giữ nguyên Deck thử nghiệm cũ. |
 | Nạp database phát triển `english_learning_db` | PASS theo log PowerShell người dùng gửi. Script tạo bản sao lưu, dry-run kết thúc bằng `ROLLBACK` và lần nạp kết thúc bằng `COMMIT`. Đã thêm 6 Deck, 72 từ mới và 90 liên kết. Cả 6 Deck có 15 từ đã xác minh. |
 | Expo Go trên điện thoại | Chưa chạy trong lượt này |
 
