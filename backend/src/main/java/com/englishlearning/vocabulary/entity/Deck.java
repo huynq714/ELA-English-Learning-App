@@ -28,6 +28,18 @@ public class Deck {
     @Column(length = 8)
     private String level;
 
+    @Column(name = "topic_key", length = 64)
+    private String topicKey;
+
+    @Column(length = 120)
+    private String topic;
+
+    @Column(name = "topic_source", length = 12)
+    private String topicSource;
+
+    @Column(name = "topic_source_label", length = 120)
+    private String topicSourceLabel;
+
     @Column(name = "is_published", nullable = false)
     private boolean published;
 
@@ -80,6 +92,22 @@ public class Deck {
 
     public String getLevel() {
         return level;
+    }
+
+    public String getTopicKey() {
+        return topicKey;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public String getTopicSource() {
+        return topicSource;
+    }
+
+    public String getTopicSourceLabel() {
+        return topicSourceLabel;
     }
 
     public boolean isPublished() {

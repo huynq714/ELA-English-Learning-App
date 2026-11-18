@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/features/auth/view-model/session-context';
 import { ApiError } from '@/services/api-client';
+import type { EnglishLevel } from '../models/english-level';
 import { pickAvatar } from '../repositories/avatar-picker';
-import { type EnglishLevel, profileRepository } from '../repositories/profile-repository';
+import { profileRepository } from '../repositories/profile-repository';
 
 export function useProfileViewModel() {
-  const { authenticated, logout, state, updateDisplayName } = useSession();
+  const { authenticated, logout, state, updateProfile } = useSession();
   const [displayName, setDisplayName] = useState(state.status === 'signed-in' ? state.user.displayName : '');
   const [savedAvatar, setSavedAvatar] = useState<string | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
@@ -90,7 +91,7 @@ export function useProfileViewModel() {
         ...(selectedAvatar ? { avatarUrl: selectedAvatar } : {}),
       }));
       setDisplayName(saved.displayName);
-      updateDisplayName(saved.userId, saved.displayName);
+      updateProfile(saved.userId, saved.displayName, saved.englishLevel);
       setSavedAvatar(saved.avatarUrl);
       setSelectedAvatar(null);
       setLevel(saved.englishLevel);

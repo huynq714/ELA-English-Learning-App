@@ -1,43 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { deckRepository } from '../repositories/deck-repository';
-import type { Deck } from '../models/deck';
+import { useVocabularyQuery } from './use-vocabulary-query';
+
+const searchKey = (value: string) => value.normalize('NFC').trim().toLocaleLowerCase('vi');
 
 export function useDecksViewModel() {
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, isRefreshing, error, refresh } = useVocabularyQuery('decks', deckRepository.getPublishedDecks);
+  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState(0);
+  const [topicKey, setTopicKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    deckRepository.getPublishedDecks().then(
-      loadedDecks => {
-        if (!cancelled) setDecks(loadedDecks);
-      },
-      reason => {
-        if (!cancelled) {
-          setError(reason instanceof Error ? reason.message : 'Không thể tải danh sách bộ từ.');
-        }
-      },
-    ).finally(() => {
-      if (!cancelled) setIsLoading(false);
-    });
+  const allDecks = data ?? [];
+  const topics = Array.from(new Map(allDecks.map(deck => [deck.topicKey, deck.topic])), ([key, label]) => ({ key, label }));
+  const selectedTopic = tab === 1 && topics.some(topic => topic.key === topicKey) ? topicKey : null;
+  const query = searchKey(search);
+  const decks = allDecks.filter(deck => (!selectedTopic || deck.topicKey === selectedTopic)
+    && (searchKey(deck.title).includes(query) || searchKey(deck.topic).includes(query)));
 
-    return () => { cancelled = true; };
-  }, []);
-
-  const refresh = useCallback(async () => {
-    setIsRefreshing(true);
-    setError(null);
-    try {
-      setDecks(await deckRepository.getPublishedDecks());
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không thể tải danh sách bộ từ.');
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  return { decks, isLoading, isRefreshing, error, refresh };
+  return {
+    decks, topics, isLoading, isRefreshing, refresh, search, setSearch, tab, setTab, selectedTopic, setTopicKey,
+    hasCatalogue: allDecks.length > 0,
+    needsProfileLevel: error?.code === 'PROFILE_LEVEL_REQUIRED',
+    error: error?.message ?? null,
+  };
 }

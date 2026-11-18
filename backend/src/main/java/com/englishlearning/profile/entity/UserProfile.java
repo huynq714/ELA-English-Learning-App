@@ -18,6 +18,8 @@ import java.util.UUID;
 @Table(name = "user_profiles")
 public class UserProfile {
 
+    public static final String ENGLISH_LEVEL_PATTERN = "A[12]|B[12]|C[12]";
+
     @Id
     @Column(name = "user_id", nullable = false)
     private UUID userId;
@@ -43,7 +45,11 @@ public class UserProfile {
     }
 
     public static UserProfile createDefault(User user) {
-        return create(user, "A1", 15, null);
+        return createWithDefaults(user, "A1");
+    }
+
+    public static UserProfile createWithDefaults(User user, String englishLevel) {
+        return create(user, englishLevel, 15, null);
     }
 
     public static UserProfile create(User user, String englishLevel, int dailyGoalMinutes, String avatarUrl) {

@@ -1,8 +1,12 @@
 import { useRef, useState } from 'react';
 
+import type { EnglishLevel } from '@/features/profile/models/english-level';
 import { ApiError } from '@/services/api-client';
+import type { RegisterInput } from '../repositories/auth-repository';
 import { validateNewPassword } from './password-validation';
 import { useSession } from './session-context';
+
+const levelRequired = 'Vui lòng chọn trình độ tiếng Anh.';
 
 export function useAuthForm(mode: 'login' | 'register') {
   const { login, register } = useSession();
@@ -10,9 +14,15 @@ export function useAuthForm(mode: 'login' | 'register') {
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [englishLevel, setEnglishLevel] = useState<EnglishLevel | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
+
+  const selectEnglishLevel = (level: EnglishLevel) => {
+    setEnglishLevel(level);
+    setError(current => current === levelRequired ? null : current);
+  };
 
   const submit = async () => {
     if (inFlight.current) return false;
@@ -30,16 +40,24 @@ export function useAuthForm(mode: 'login' | 'register') {
       setError('Vui lòng nhập mật khẩu hợp lệ.');
       return false;
     }
-    const passwordError = mode === 'register' ? validateNewPassword(password, confirmPassword) : null;
-    if (passwordError) {
-      setError(passwordError);
-      return false;
+    let registration: RegisterInput | undefined;
+    if (mode === 'register') {
+      if (!englishLevel) {
+        setError(levelRequired);
+        return false;
+      }
+      const passwordError = validateNewPassword(password, confirmPassword);
+      if (passwordError) {
+        setError(passwordError);
+        return false;
+      }
+      registration = { email: address, displayName: name, password, confirmPassword, englishLevel };
     }
     inFlight.current = true;
     setPending(true);
     setError(null);
     try {
-      if (mode === 'register') await register({ email: address, displayName: name, password, confirmPassword });
+      if (registration) await register(registration);
       else await login({ email: address, password });
       setPassword('');
       setConfirmPassword('');
@@ -56,5 +74,5 @@ export function useAuthForm(mode: 'login' | 'register') {
   };
 
   return { email, setEmail, displayName, setDisplayName, password, setPassword, confirmPassword, setConfirmPassword,
-    pending, error, submit };
+    englishLevel, selectEnglishLevel, pending, error, submit };
 }

@@ -27,7 +27,10 @@ function DeckCard({ deck, purple }: { deck: Deck; purple: boolean }) {
 
 export default function VocabularyScreen() {
   const notice = useDemoNotice();
-  const { decks, isLoading, isRefreshing, error, refresh } = useDecksViewModel();
+  const {
+    decks, topics, isLoading, isRefreshing, error, refresh, hasCatalogue, needsProfileLevel,
+    search, setSearch, tab, setTab, selectedTopic, setTopicKey,
+  } = useDecksViewModel();
   return <Screen testID="screen-vocabulary" header={<AppHeader title="Từ vựng" trailing={
     <Pressable accessibilityRole="button" accessibilityLabel="Làm mới danh sách bộ từ"
       accessibilityState={{ disabled: isLoading || isRefreshing }} disabled={isLoading || isRefreshing}
@@ -38,21 +41,39 @@ export default function VocabularyScreen() {
     </Pressable>
   } />}
     footer={<BottomNavigation active="vocabulary" />} contentStyle={styles.content}>
-    <AppTextInput accessibilityLabel="Tìm kiếm chủ đề, từ vựng" placeholder="Tìm kiếm chủ đề, từ vựng"
-      editable={false} icon={<Asset source={assets.search} width={19} />} style={styles.search} inputStyle={{ fontSize: 13 }} />
-    <SegmentedControl labels={['Tất cả', 'Chủ đề', 'Bộ từ']} selected={0}
-      onPress={index => { if (index !== 0) notice('Lọc chủ đề và bộ từ'); }} />
+    <AppTextInput accessibilityLabel="Tìm theo tên bộ từ hoặc chủ đề" placeholder="Tìm theo tên bộ từ hoặc chủ đề"
+      value={search} onChangeText={setSearch} autoCapitalize="none"
+      icon={<Asset source={assets.search} width={19} />} style={styles.search} inputStyle={{ fontSize: 13 }} />
+    <SegmentedControl labels={['Tất cả', 'Chủ đề']} selected={tab} onPress={setTab} />
+    {tab === 1 && topics.length > 0 && <View style={styles.topics}>
+      {[{ key: null, label: 'Tất cả chủ đề' }, ...topics].map(topic => {
+        const selected = selectedTopic === topic.key;
+        return <Pressable key={topic.key ?? 'all'} accessibilityRole="button"
+          accessibilityState={{ selected }} accessibilityLabel={`Chủ đề ${topic.label}`}
+          onPress={() => setTopicKey(topic.key)} style={[styles.topic, selected && styles.topicSelected]}>
+          <AppText size={13} weight={selected ? 'semibold' : 'regular'}
+            color={selected ? colors.primary : colors.muted}>{topic.label}</AppText>
+        </Pressable>;
+      })}
+    </View>}
     {isLoading && decks.length === 0 && <AppText color={colors.muted}>Đang tải bộ từ…</AppText>}
-    {error && <View style={styles.state} accessibilityRole="alert">
+    {needsProfileLevel && <View style={styles.state}>
+      <AppText weight="semibold">Chọn trình độ tiếng Anh</AppText>
+      <AppText color={colors.muted}>Hoàn thiện hồ sơ để xem các bộ từ phù hợp.</AppText>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/profile')}>
+        <AppText weight="semibold" color={colors.primary}>Mở hồ sơ</AppText>
+      </Pressable>
+    </View>}
+    {error && !needsProfileLevel && <View style={styles.state} accessibilityRole="alert">
       <AppText weight="semibold">Không tải được danh sách bộ từ</AppText>
       <AppText color={colors.muted}>{error}</AppText>
       <Pressable accessibilityRole="button" onPress={() => void refresh()}>
         <AppText weight="semibold" color={colors.primary}>Thử lại</AppText>
       </Pressable>
     </View>}
-    {!isLoading && !error && decks.length === 0 && <View style={styles.state}>
-      <AppText weight="semibold">Chưa có bộ từ được xuất bản</AppText>
-      <AppText color={colors.muted}>Các bộ từ sẽ xuất hiện ở đây khi được thêm vào thư viện.</AppText>
+    {!isLoading && !isRefreshing && !error && decks.length === 0 && <View style={styles.state}>
+      <AppText weight="semibold">{hasCatalogue ? 'Không tìm thấy bộ từ' : 'Chưa có bộ từ cho trình độ này'}</AppText>
+      <AppText color={colors.muted}>{hasCatalogue ? 'Thử đổi từ khóa hoặc chủ đề.' : 'Bạn có thể xem trình độ trong hồ sơ.'}</AppText>
     </View>}
     {decks.length > 0 && <View style={styles.list}>
       {decks.map((deck, index) => <DeckCard key={deck.id} deck={deck} purple={index % 3 === 2} />)}
@@ -68,6 +89,10 @@ export default function VocabularyScreen() {
 const styles = StyleSheet.create({
   content: { paddingTop: 12, paddingHorizontal: 22, paddingBottom: 20, gap: 20 },
   search: { minHeight: 48, padding: 13, gap: 10, borderRadius: 12 },
+  topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  topic: { paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1,
+    borderColor: colors.screenBorder, borderRadius: 16, backgroundColor: colors.surface },
+  topicSelected: { borderColor: colors.primary },
   list: { gap: 13 },
   state: { gap: 10, paddingVertical: 14 },
   deck: { minHeight: 87, paddingHorizontal: 8, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 15,

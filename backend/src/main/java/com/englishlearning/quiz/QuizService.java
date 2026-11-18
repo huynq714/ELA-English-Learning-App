@@ -1,7 +1,6 @@
 package com.englishlearning.quiz;
 
-import com.englishlearning.vocabulary.repository.DeckRepository;
-import com.englishlearning.vocabulary.service.DeckNotFoundException;
+import com.englishlearning.vocabulary.service.DeckService;
 import com.englishlearning.vocabulary.service.DeckWordsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,11 @@ import static com.englishlearning.quiz.QuizPayloads.*;
 @Service
 public class QuizService {
     private final QuizRepository repository;
-    private final DeckRepository decks;
+    private final DeckService decks;
     private final DeckWordsService words;
     private final ObjectMapper json;
 
-    public QuizService(QuizRepository repository, DeckRepository decks, DeckWordsService words, ObjectMapper json) {
+    public QuizService(QuizRepository repository, DeckService decks, DeckWordsService words, ObjectMapper json) {
         this.repository = repository;
         this.decks = decks;
         this.words = words;
@@ -32,7 +31,7 @@ public class QuizService {
     @Transactional
     public Quiz start(UUID userId, UUID deckId) {
         repository.lockUser(userId);
-        requirePublishedDeck(deckId);
+        decks.requirePublishedDeck(userId, deckId);
         var latest = repository.latest(userId, deckId).orElse(null);
         if (latest != null && !latest.completed()) {
             requireStudiedDeck(userId, deckId);
@@ -47,7 +46,7 @@ public class QuizService {
         }
         var previous = latest == null ? null : snapshot(latest);
         var direction = previous == null ? Direction.EN_TO_VI : previous.direction().opposite();
-        var next = QuizQuestionGenerator.generate(words.listPublishedDeckWords(deckId), direction, previous);
+        var next = QuizQuestionGenerator.generate(words.listPublishedDeckWords(userId, deckId), direction, previous);
         requireStudiedDeck(userId, deckId);
         var attemptId = repository.insertAttempt(userId, deckId, json.writeValueAsString(next));
         return publicQuiz(attemptId, next, List.of());
@@ -57,6 +56,7 @@ public class QuizService {
     public AnswerFeedback answer(UUID userId, UUID attemptId, Selection selection) {
         repository.lockUser(userId);
         var attempt = owned(userId, attemptId);
+        decks.requirePublishedDeck(userId, attempt.deckId());
         if (!attempt.completed()) requireStudiedDeck(userId, attempt.deckId());
         var question = snapshot(attempt).questions().get(selection.questionNo() - 1);
         for (var saved : repository.answers(attemptId)) {
@@ -80,6 +80,7 @@ public class QuizService {
         repository.lockUser(userId);
         var attempt = owned(userId, attemptId);
         if (attempt.completed()) return scored(attempt, attempt.correctCount());
+        decks.requirePublishedDeck(userId, attempt.deckId());
         requireStudiedDeck(userId, attempt.deckId());
         var questions = snapshot(attempt).questions();
         var selections = new HashMap<Integer, Integer>();
@@ -121,12 +122,13 @@ public class QuizService {
 
     @Transactional(readOnly = true)
     public StudyProgress progress(UUID userId, UUID deckId) {
-        requirePublishedDeck(deckId);
+        decks.requirePublishedDeck(userId, deckId);
         return studyProgress(userId, deckId);
     }
 
     @Transactional
     public StudyProgress study(UUID userId, UUID deckId, UUID wordId) {
+        decks.requirePublishedDeck(userId, deckId);
         if (!repository.study(userId, deckId, wordId)) {
             throw new QuizException(HttpStatus.NOT_FOUND, "WORD_NOT_FOUND", "Word not found in the published deck");
         }
@@ -143,10 +145,6 @@ public class QuizService {
         if (latest == null || !latest.completed() || latest.correctCount() >= PASS_SCORE) return List.of();
         var wordIds = snapshot(latest).questions().stream().map(StoredQuestion::wordId).toList();
         return repository.wordsNotReviewedSince(userId, deckId, wordIds, latest.completedAt());
-    }
-
-    private void requirePublishedDeck(UUID deckId) {
-        if (decks.findByIdAndPublishedTrue(deckId).isEmpty()) throw new DeckNotFoundException(deckId);
     }
 
     private void requireStudiedDeck(UUID userId, UUID deckId) {

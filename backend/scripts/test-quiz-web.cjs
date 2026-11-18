@@ -8,9 +8,11 @@ const web = `http://127.0.0.1:${process.env.QUIZ_WEB_PORT}`;
 const api = `http://127.0.0.1:${process.env.AUTH_SMOKE_PORT}`;
 const edge = process.env.QUIZ_EDGE_PATH || join(process.env['ProgramFiles(x86)'], 'Microsoft/Edge/Application/msedge.exe');
 
-async function backend(path, body) {
-  const response = await fetch(`${api}/api/v1${path}`, body && {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+async function backend(path, body, token) {
+  const response = await fetch(`${api}/api/v1${path}`, {
+    ...(body ? { method: 'POST', body: JSON.stringify(body) } : {}),
+    headers: { ...(body ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}) },
   });
   assert(response.ok, `${path} returned ${response.status}`);
   return response.json();
@@ -23,10 +25,12 @@ async function waitForText(page, text) {
 async function run() {
   const email = `quiz-web-${randomUUID()}@example.test`;
   const password = process.env.QUIZ_SMOKE_PASSWORD;
-  await backend('/auth/register', { email, displayName: 'Quiz web E2E', password, confirmPassword: password });
-  const decks = await backend('/decks');
-  const deck = decks.find(item => item.title.endsWith('03'));
-  const words = await backend(`/decks/${deck.id}/words`);
+  const session = await backend('/auth/register', {
+    email, displayName: 'Quiz web E2E', password, confirmPassword: password, englishLevel: 'A1',
+  });
+  const decks = await backend('/decks', null, session.accessToken);
+  const deck = decks.find(item => item.topicKey === 'a1-time-frequency');
+  const words = await backend(`/decks/${deck.id}/words`, null, session.accessToken);
   const translations = new Map(words.map(word => [word.headword, word.meaningVi]));
   const originals = new Map(words.map(word => [word.meaningVi, word.headword]));
 

@@ -12,6 +12,8 @@ services:
       - ./database/week3/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
       - ./database/week4/migrations/V1_2__source_vocabulary_fields.sql:/docker-entrypoint-initdb.d/002-week4-vocabulary.sql:ro
       - ./database/week4/migrations/V1_3__quiz_question_snapshot.sql:/docker-entrypoint-initdb.d/003-week4-quiz.sql:ro
+      - ./database/week4/migrations/V1_4__topic_deck_catalog.sql:/docker-entrypoint-initdb.d/004-week4-topic-catalog.sql:ro
+      - ./database/week4/import/data/apply_topic_decks.sql:/docker-entrypoint-initdb.d/005-week4-topic-decks.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s

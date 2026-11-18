@@ -7,14 +7,10 @@ import { AppText, Asset, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/features/auth/view-model/session-context';
 import { ProfileHeader } from '@/features/profile/components/profile-header';
 import { SuccessDialog } from '@/features/profile/components/success-dialog';
-import { levels } from '@/features/profile/repositories/profile-repository';
+import { levelLabels, levels } from '@/features/profile/models/english-level';
 import { useProfileViewModel } from '@/features/profile/view-model/use-profile-view-model';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors, fonts } from '@/theme/tokens';
-
-const levelLabels = {
-  A1: 'Cơ bản', A2: 'Sơ cấp', B1: 'Trung cấp', B2: 'Trung cấp cao', C1: 'Nâng cao', C2: 'Thành thạo',
-};
 
 export default function ProfileScreen() {
   const { state } = useSession();

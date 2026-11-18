@@ -51,8 +51,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(rules -> rules
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/decks",
-                                "/api/v1/decks/{id}", "/api/v1/decks/{id}/words").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/decks", "/api/v1/decks/{id}",
+                                "/api/v1/decks/{id}/words").authenticated()
                         .requestMatchers("/api/v1/users/me", "/api/v1/users/me/profile", "/api/v1/users/me/password").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/quiz/attempts", "/api/v1/quiz/attempts/{id}/answers",
                                 "/api/v1/quiz/attempts/{id}/submit").authenticated()

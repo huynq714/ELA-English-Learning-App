@@ -70,11 +70,14 @@ def main():
     tag = uuid4().hex[:12]
     password = "Ela7" + secrets.token_urlsafe(14)
     alice = {"email": f"auth-a-{tag}@example.test", "displayName": "Auth Smoke A",
-             "password": password, "confirmPassword": password}
-    bob = {**alice, "email": f"auth-b-{tag}@example.test", "displayName": "Auth Smoke B"}
+             "password": password, "confirmPassword": password, "englishLevel": "A1"}
+    bob = {**alice, "email": f"auth-b-{tag}@example.test", "displayName": "Auth Smoke B", "englishLevel": "A2"}
     expect("health remains public", "GET", "/health", 200)
-    expect("deck list remains public", "GET", "/decks", 200)
+    expect("deck list requires JWT", "GET", "/decks", 401)
     expect("invalid email rejected", "POST", "/auth/register", 400, payload={**alice, "email": "bad-email"})
+    expect("missing registration level rejected", "POST", "/auth/register", 400,
+           payload={key: value for key, value in alice.items() if key != "englishLevel"})
+    expect("invalid registration level rejected", "POST", "/auth/register", 400, payload={**alice, "englishLevel": "Z9"})
     expect("missing password confirmation rejected", "POST", "/auth/register", 400,
            payload={key: value for key, value in alice.items() if key != "confirmPassword"})
     mismatch = expect("registration password mismatch", "POST", "/auth/register", 400,
@@ -86,9 +89,14 @@ def main():
     expect("password byte limit", "POST", "/auth/register", 400,
            payload={**alice, "password": too_long, "confirmPassword": too_long})
     registered_a = expect("register account A and issue a session", "POST", "/auth/register", 201, payload=alice)
+    a1_decks = expect("new A1 user can read the catalogue", "GET", "/decks", 200, access=registered_a["accessToken"])
+    assert len(a1_decks) == 3 and all(deck["level"] == "A1" for deck in a1_decks)
     user_a = registered_a["user"]
     assert set(user_a) == {"id", "email", "displayName"}
-    user_b = expect("register account B", "POST", "/auth/register", 201, payload=bob)["user"]
+    registered_b = expect("register account B at A2", "POST", "/auth/register", 201, payload=bob)
+    user_b = registered_b["user"]
+    a2_decks = expect("new A2 user can read the A2 catalogue", "GET", "/decks", 200, access=registered_b["accessToken"])
+    assert len(a2_decks) == 3 and all(deck["level"] == "A2" for deck in a2_decks)
     assert expect("registration token works without login", "GET", "/users/me", 200,
                   access=registered_a["accessToken"]) == user_a
     expect("duplicate email is case insensitive", "POST", "/auth/register", 409,
@@ -113,7 +121,7 @@ def main():
     expect("missing expiration rejected", "GET", "/users/me", 401, access=test_token(user_a["id"], None))
     expect("wrong audience rejected", "GET", "/users/me", 401,
            access=test_token(user_a["id"], now + 300, "other-app"))
-    profile_a = expect("default profile created", "GET", "/users/me/profile", 200, access=access_a)
+    profile_a = expect("profile created with selected A1 level", "GET", "/users/me/profile", 200, access=access_a)
     assert (profile_a["userId"], profile_a["englishLevel"], profile_a["dailyGoalMinutes"]) == (user_a["id"], "A1", 15)
     expect("goal validation", "PATCH", "/users/me/profile", 400, access=access_a, payload={"dailyGoalMinutes": 241})
     expect("level validation", "PATCH", "/users/me/profile", 400, access=access_a, payload={"englishLevel": "Z9"})
@@ -132,7 +140,7 @@ def main():
     assert expect("reload own profile", "GET", "/users/me/profile", 200, access=access_a) == saved
     assert expect("display name visible in current user", "GET", "/users/me", 200, access=access_a)["displayName"] == patch["displayName"]
     other = expect("other profile unchanged", "GET", "/users/me/profile", 200, access=access_b)
-    assert (other["userId"], other["englishLevel"], other["dailyGoalMinutes"]) == (user_b["id"], "A1", 15)
+    assert (other["userId"], other["englishLevel"], other["dailyGoalMinutes"]) == (user_b["id"], "A2", 15)
     assert other["displayName"] == user_b["displayName"] and other["avatarUrl"] is None
 
     new_password = "Ela8" + secrets.token_urlsafe(14)

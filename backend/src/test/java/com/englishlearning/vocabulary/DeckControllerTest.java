@@ -1,5 +1,7 @@
 package com.englishlearning.vocabulary;
 
+import com.englishlearning.auth.AuthPayloads.CurrentUser;
+import com.englishlearning.auth.AuthService;
 import com.englishlearning.common.exception.GlobalExceptionHandler;
 import com.englishlearning.vocabulary.controller.DeckController;
 import com.englishlearning.vocabulary.controller.DeckDevController;
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
@@ -40,6 +43,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 
 class DeckControllerTest {
 
+    private final UUID userId = UUID.randomUUID();
+    private final AuthService auth = mock(AuthService.class);
     private final DeckService deckService = mock(DeckService.class);
     private final DeckWordsService deckWordsService = mock(DeckWordsService.class);
     private MockMvc mockMvc;
@@ -50,7 +55,9 @@ class DeckControllerTest {
         deckId = UUID.fromString("11111111-1111-4111-8111-111111111111");
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
-        mockMvc = standaloneSetup(new DeckController(deckService, deckWordsService), new DeckDevController(deckService))
+        when(auth.requireActiveUser(any())).thenReturn(new CurrentUser(userId, "vocabulary@example.test", "Vocabulary Test"));
+        mockMvc = standaloneSetup(new DeckController(deckService, deckWordsService, auth), new DeckDevController(deckService))
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();
@@ -58,17 +65,18 @@ class DeckControllerTest {
 
     @Test
     void listsPublishedDecksAsDtos() throws Exception {
-        when(deckService.listPublished()).thenReturn(List.of(deck("Travel A1", true)));
+        when(deckService.listPublished(userId)).thenReturn(List.of(deck("Travel A1", true)));
 
         mockMvc.perform(get("/api/v1/decks"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Travel A1"))
-                .andExpect(jsonPath("$[0].isPublished").value(true));
+                .andExpect(jsonPath("$[0].isPublished").value(true))
+                .andExpect(jsonPath("$[0].topic").value("Travel"));
     }
 
     @Test
     void hiddenOrMissingPublicDeckReturns404() throws Exception {
-        when(deckService.getPublished(deckId)).thenThrow(new DeckNotFoundException(deckId));
+        when(deckService.requirePublishedDeck(userId, deckId)).thenThrow(new DeckNotFoundException(deckId));
 
         mockMvc.perform(get("/api/v1/decks/{id}", deckId))
                 .andExpect(status().isNotFound())
@@ -77,7 +85,7 @@ class DeckControllerTest {
 
     @Test
     void listsWordsForPublishedDeckAsSourceAttributedDtos() throws Exception {
-        when(deckWordsService.listPublishedDeckWords(deckId)).thenReturn(List.of(new DeckWordResponse(
+        when(deckWordsService.listPublishedDeckWords(userId, deckId)).thenReturn(List.of(new DeckWordResponse(
                 UUID.fromString("33333333-3333-4333-8333-333333333333"), "journey", "noun", "A1",
                 "The act of travelling from one place to another.", null, "/ˈdʒɜːni/",
                 "It was a long journey.", "Đó là một hành trình dài.", null,
@@ -94,7 +102,7 @@ class DeckControllerTest {
 
     @Test
     void missingOrHiddenDeckWordsReturn404() throws Exception {
-        when(deckWordsService.listPublishedDeckWords(deckId)).thenThrow(new DeckNotFoundException(deckId));
+        when(deckWordsService.listPublishedDeckWords(userId, deckId)).thenThrow(new DeckNotFoundException(deckId));
 
         mockMvc.perform(get("/api/v1/decks/{id}/words", deckId))
                 .andExpect(status().isNotFound())
@@ -175,6 +183,7 @@ class DeckControllerTest {
     }
 
     private DeckResponse deck(String title, boolean published) {
-        return new DeckResponse(deckId, title, null, "A1", published, OffsetDateTime.parse("2026-11-11T12:00:00Z"));
+        return new DeckResponse(deckId, title, null, "A1", "a1-travel", "Travel", "APP", null,
+                published, OffsetDateTime.parse("2026-11-11T12:00:00Z"));
     }
 }

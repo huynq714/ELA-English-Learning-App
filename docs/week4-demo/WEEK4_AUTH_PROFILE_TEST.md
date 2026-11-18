@@ -12,14 +12,14 @@
 
 | API | Kết quả |
 | --- | --- |
-| `POST /api/v1/auth/register` | Kiểm tra `password` và `confirmPassword` trùng nhau. Tạo User bằng BCrypt và Profile mặc định A1/15 phút trong cùng giao dịch. Trả 201 cùng JWT và thông tin tài khoản để app mở Trang chủ. |
+| `POST /api/v1/auth/register` | Yêu cầu `password` và `confirmPassword` trùng nhau và `englishLevel` là một trong các mức A1, A2, B1, B2, C1, C2. Tạo User bằng BCrypt và Profile với trình độ đã chọn cùng mục tiêu mặc định 15 phút. Trả 201 cùng JWT và thông tin tài khoản để app mở Trang chủ. |
 | `POST /api/v1/auth/login` | Trả JWT Bearer có hạn nếu tài khoản đang hoạt động và mật khẩu đúng. Trả 401 nếu thông tin không hợp lệ. |
 | `GET /api/v1/users/me` | Trả ID, email, tên hiển thị của tài khoản trong JWT. |
 | `GET /api/v1/users/me/profile` | Trả hồ sơ của tài khoản trong JWT. Tài khoản cũ chưa có hồ sơ nhận 404 và có thể tạo bằng PATCH. |
 | `PATCH /api/v1/users/me/profile` | Lưu tên hiển thị, ảnh đại diện, trình độ A1–C2 và mục tiêu 5–240 phút cho tài khoản trong JWT. Ảnh từ thư viện được thu nhỏ thành JPEG và lưu vào `avatar_url` hiện có. |
 | `PATCH /api/v1/users/me/password` | Kiểm tra mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới. Sau khi đổi thành công, cấp token thay thế và các token trước đó của tài khoản hết hiệu lực. |
 
-JWT dùng HS256, issuer và audience riêng, mặc định hết hạn sau 1 giờ. Backend yêu cầu `AUTH_JWT_SECRET` là ít nhất 32 byte ngẫu nhiên được mã hóa Base64. Chỉ các yêu cầu loopback với profile `local` truy cập được các endpoint `/dev`. GET Health và Vocabulary tiếp tục là API công khai.
+JWT dùng HS256, issuer và audience riêng, mặc định hết hạn sau 1 giờ. Backend yêu cầu `AUTH_JWT_SECRET` là ít nhất 32 byte ngẫu nhiên được mã hóa Base64. Chỉ các yêu cầu loopback với profile `local` truy cập được các endpoint `/dev`. Health là API công khai. Vocabulary yêu cầu JWT và đọc trình độ từ Profile.
 
 Expo lưu access token trên thiết bị bằng SecureStore. App xác minh phiên bằng `/users/me` khi mở lại, yêu cầu đăng nhập lại khi phiên hết hạn, và xóa phiên khi đăng xuất. Sau khi nâng cấp từ phiên bản cũ của Task 02, người dùng đang có phiên cũ cần đăng nhập lại một lần. Mất mạng khi khôi phục phiên có màn Thử lại. Logout xử lý phía client. Token đã phát hành hết hiệu lực sau khi hết hạn hoặc sau khi đổi mật khẩu. Google, Apple và khôi phục mật khẩu vẫn là mục demo của UI cũ. Expo Web dùng phiên trong bộ nhớ.
 
@@ -34,10 +34,10 @@ Expo lưu access token trên thiết bị bằng SecureStore. App xác minh phi�
 
 | Kiểm tra | Trạng thái |
 | --- | --- |
-| Maven | PASS · 22 tests, 0 lỗi. Bao gồm tài khoản DISABLED bị từ chối login và truy cập. |
-| HTTP + PostgreSQL cô lập | PASS · 42 ca. Bao gồm xác nhận mật khẩu khi đăng ký, dùng JWT ngay sau đăng ký, chặn đọc hoặc sửa hồ sơ của người khác, lưu tên và ảnh, đổi mật khẩu, từ chối mật khẩu và token cũ. SQL xác nhận 3 mật khẩu BCrypt, 3 hồ sơ, 1 hồ sơ có tên và ảnh đã đổi, cùng 43 từ và 43 liên kết Vocabulary. |
+| Maven | PASS · 23 tests, 0 lỗi. Bao gồm tài khoản DISABLED bị từ chối login và truy cập. |
+| HTTP + PostgreSQL cô lập | PASS. Bỏ trống hoặc gửi trình độ sai khi đăng ký nhận 400. Đăng ký A1/A2 trả 201 và JWT dùng được ngay để đọc ba Deck đúng trình độ. Profile lưu trình độ đã chọn. Kiểm thử đổi mật khẩu, lưu tên/ảnh và phân quyền Profile cũng PASS. |
 | TypeScript và ESLint | PASS. |
-| Expo | PASS ở mức build. Metro trả manifest iOS và bundle chứa Auth/Profile. Bản export iOS cũng build được. |
+| Expo Web | PASS. Export thành công. Trình duyệt xác nhận form báo thiếu trình độ trước khi gọi API, đăng ký A2 vào thẳng Trang chủ, Profile lưu A2 và Từ vựng hiện ba Deck A2. |
 | Expo Go trên thiết bị thật | NOT TESTED với bản chỉnh sửa mới. Cần kiểm tra Đăng ký → Trang chủ, chọn ảnh, lưu hồ sơ và đổi mật khẩu. |
 | Expo Go — môi trường thật | Cần khởi động lại Backend với JWT secret. `english_learning_db` của demo chưa được dùng để chạy các ca ghi dữ liệu kiểm thử. |
 
@@ -67,7 +67,7 @@ Expo lưu access token trên thiết bị bằng SecureStore. App xác minh phi�
 
    Nếu Expo báo `UnexpectedServerError` khi chuẩn bị manifest, thử đặt `$env:EXPO_OFFLINE = "1"` rồi chạy lại cùng lệnh. Laptop vẫn cần kết nối Wi-Fi để điện thoại truy cập Metro và Backend.
 
-3. Chọn **Bắt đầu → Đăng ký**, nhập tên hiển thị, email mới và mật khẩu ít nhất 8 ký tự, có chữ và số. Nhập cùng mật khẩu vào ô **Xác nhận mật khẩu** rồi bấm **Đăng ký**. App mở thẳng Trang chủ.
+3. Chọn **Bắt đầu → Đăng ký**, nhập tên hiển thị, email mới và mật khẩu ít nhất 8 ký tự, có chữ và số. Xác nhận mật khẩu, chọn **A2** ở mục **Trình độ tiếng Anh** rồi bấm **Đăng ký**. App mở thẳng Trang chủ. Mở **Từ vựng** để thấy ba Deck A2 và **Cá nhân** để đối chiếu trình độ đã lưu.
 4. Vào **Cá nhân**. Đổi tên hiển thị, chọn ảnh từ thư viện, chọn **B1** và nhập **30** phút. Bấm **Lưu thay đổi**. Mở lại app để kiểm tra thông tin và ảnh đã lưu.
 5. Trong pgAdmin kiểm tra dữ liệu đã lưu với email vừa đăng ký. Truy vấn chỉ trả cờ nhận diện định dạng BCrypt.
 

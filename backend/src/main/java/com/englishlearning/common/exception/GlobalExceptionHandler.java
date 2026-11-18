@@ -3,6 +3,7 @@ package com.englishlearning.common.exception;
 import com.englishlearning.auth.AuthException;
 import com.englishlearning.quiz.QuizException;
 import com.englishlearning.vocabulary.service.DeckNotFoundException;
+import com.englishlearning.vocabulary.service.ProfileLevelRequiredException;
 import com.englishlearning.profile.service.ProfileNotFoundException;
 import com.englishlearning.profile.service.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleNotFound(DeckNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiError("NOT_FOUND", "Deck not found"));
+    }
+
+    @ExceptionHandler(ProfileLevelRequiredException.class)
+    public ResponseEntity<ApiError> handleProfileLevelRequired(ProfileLevelRequiredException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError("PROFILE_LEVEL_REQUIRED", exception.getMessage()));
     }
 
     @ExceptionHandler({UserNotFoundException.class, ProfileNotFoundException.class})

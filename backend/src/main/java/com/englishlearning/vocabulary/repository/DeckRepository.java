@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface DeckRepository extends JpaRepository<Deck, UUID> {
 
-    List<Deck> findAllByPublishedTrueOrderByCreatedAtDesc();
+    List<Deck> findAllByPublishedTrueAndLevelAndTopicKeyIsNotNullOrderByTopicKey(String level);
 
-    Optional<Deck> findByIdAndPublishedTrue(UUID id);
+    Optional<Deck> findByIdAndPublishedTrueAndLevelAndTopicKeyIsNotNull(UUID id, String level);
 }

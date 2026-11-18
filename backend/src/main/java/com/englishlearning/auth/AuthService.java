@@ -51,7 +51,7 @@ public class AuthService {
             }
             throw error;
         }
-        profiles.save(UserProfile.createDefault(user));
+        profiles.save(UserProfile.createWithDefaults(user, request.englishLevel()));
         return tokens.issue(user);
     }
 

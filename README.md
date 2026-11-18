@@ -4,7 +4,7 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 
 ## Backend hiện có
 
-- Deck: đọc Deck đã publish; tạo, cập nhật và soft-delete Deck trong profile `local`.
+- Danh mục Deck: đọc bằng JWT, lọc theo trình độ trong Profile. Xem [hướng dẫn sáu Deck A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md). Tạo, cập nhật và soft-delete Deck demo qua profile `local`.
 - Auth và Profile: đăng ký, đăng nhập bằng email, JWT và cập nhật hồ sơ của tài khoản đang đăng nhập. Xem [kịch bản demo Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
 - Các API `/api/v1/dev/...` chỉ phục vụ Backend chạy native với profile `local` và yêu cầu đến từ loopback.
 - Profile chưa có API DELETE. Deck DELETE đặt `is_published=false`, không xóa hàng khỏi database.
@@ -27,7 +27,8 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 3. Trong Query Tool của database mới/trống, mở và chạy [`database/week3/schema.sql`](database/week3/schema.sql). Script tạo extension `pgcrypto`, 16 bảng, FK, constraint và trigger.
 4. Không chạy lại schema trên database đã có bảng/dữ liệu; không drop database có dữ liệu cần giữ.
 5. Với database mới, chạy thêm [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) một lần để Backend xác thực schema.
-6. Với database đã có schema Week 3, áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) trước khi dùng Flashcards và Quiz. Nếu database chưa có bộ từ A1, xem [hướng dẫn import](docs/week4-demo/VOCABULARY_IMPORT_GUIDE.md).
+6. Áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) nếu database chưa có cột `quiz_attempts.question_snapshot`.
+7. Chạy [lệnh sao lưu và nạp danh mục A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend.
 
 Kiểm tra:
 
@@ -82,7 +83,7 @@ docker compose up --build
 
 Docker tự build Backend, tạo PostgreSQL và nạp schema khi khởi tạo volume database lần đầu. Chờ log báo Spring Boot đã khởi động. Bộ cấu hình demo dùng database riêng trong Docker; không cần sửa `application.properties`.
 
-Với volume Docker có sẵn, mở database Docker trong pgAdmin và chạy [migration Quiz](database/week4/migrations/V1_3__quiz_question_snapshot.sql). Với volume mới, làm theo [hướng dẫn import](docs/week4-demo/VOCABULARY_IMPORT_GUIDE.md) để có dữ liệu A1.
+Volume Docker mới tự nạp sáu Deck khi khởi tạo. Với volume có sẵn, áp dụng bản cập nhật theo [hướng dẫn nạp PostgreSQL](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql), dùng cổng `5433` và username trong `.env`.
 
 - API: `http://127.0.0.1:8080`
 - PostgreSQL từ pgAdmin: host `127.0.0.1`, port `5433`, database/user/password xem trong file `.env` vừa tạo.
@@ -98,10 +99,9 @@ Với cả hai cách trên, mở PowerShell thứ hai:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8080/api/v1/health
-Invoke-RestMethod http://127.0.0.1:8080/api/v1/decks
 ```
 
-Health trả `UP`; danh sách Deck có thể trả `[]` nếu chưa có Deck publish. Health chỉ xác nhận app phản hồi; gọi API Deck mới kiểm tra kết nối tới database.
+Health trả `UP`. Để kiểm tra danh mục từ PostgreSQL, đăng nhập và gửi Bearer token khi gọi `GET /api/v1/decks`. Profile đã lưu A1 hoặc A2 sẽ nhận ba Deck của cấp tương ứng. [Kịch bản API](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#kiểm-thử-api-và-app)
 
 ## Thử Deck CRUD bằng Postman
 
@@ -119,9 +119,9 @@ Import [`docs/week3-demo/POSTMAN_COLLECTION.json`](docs/week3-demo/POSTMAN_COLLE
    ```
 
    Kỳ vọng `201 Created`. Request trong collection tự lưu `id` vào biến `deckId`.
-2. **Read:** `GET {{baseUrl}}/api/v1/decks` hoặc `GET {{baseUrl}}/api/v1/decks/{{deckId}}` → `200 OK`.
+2. **Read:** Xem Deck demo vừa tạo bằng truy vấn SQL bên dưới. Các request GET trong collection Tuần 3 phục vụ ca đọc cũ. API hiện tại đọc danh mục theo trình độ và yêu cầu Bearer token.
 3. **Update:** `PATCH {{baseUrl}}/api/v1/dev/decks/{{deckId}}` với body `{"title":"Deck demo đã sửa"}` → `200 OK`.
-4. **Delete:** `DELETE {{baseUrl}}/api/v1/dev/decks/{{deckId}}` → `204 No Content`. Đây là soft delete; GET public theo ID trả `404`, hàng vẫn còn với `is_published=false`.
+4. **Delete:** `DELETE {{baseUrl}}/api/v1/dev/decks/{{deckId}}` → `204 No Content`. Truy vấn SQL xác nhận hàng vẫn còn với `is_published=false`.
 
 Xác minh trong pgAdmin/Query Tool:
 

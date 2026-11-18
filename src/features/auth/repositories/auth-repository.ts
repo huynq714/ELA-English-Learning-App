@@ -1,9 +1,10 @@
+import type { EnglishLevel } from '@/features/profile/models/english-level';
 import { apiClient } from '@/services/api-client';
 
 export type CurrentUser = { id: string; email: string; displayName: string };
 export type AccessSession = { accessToken: string; expiresAt: string };
 export type LoginInput = { email: string; password: string };
-export type RegisterInput = LoginInput & { displayName: string; confirmPassword: string };
+export type RegisterInput = LoginInput & { displayName: string; confirmPassword: string; englishLevel: EnglishLevel };
 export type ChangePasswordInput = { currentPassword: string; newPassword: string; confirmPassword: string };
 type SessionResponse = AccessSession & { user: CurrentUser };
 

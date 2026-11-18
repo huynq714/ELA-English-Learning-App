@@ -1,7 +1,6 @@
 package com.englishlearning.vocabulary.service;
 
 import com.englishlearning.vocabulary.dto.DeckWordResponse;
-import com.englishlearning.vocabulary.repository.DeckRepository;
 import com.englishlearning.vocabulary.repository.WordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,19 +10,17 @@ import java.util.UUID;
 
 @Service
 public class DeckWordsService {
-    private final DeckRepository deckRepository;
+    private final DeckService decks;
     private final WordRepository wordRepository;
 
-    public DeckWordsService(DeckRepository deckRepository, WordRepository wordRepository) {
-        this.deckRepository = deckRepository;
+    public DeckWordsService(DeckService decks, WordRepository wordRepository) {
+        this.decks = decks;
         this.wordRepository = wordRepository;
     }
 
     @Transactional(readOnly = true)
-    public List<DeckWordResponse> listPublishedDeckWords(UUID deckId) {
-        if (deckRepository.findByIdAndPublishedTrue(deckId).isEmpty()) {
-            throw new DeckNotFoundException(deckId);
-        }
+    public List<DeckWordResponse> listPublishedDeckWords(UUID userId, UUID deckId) {
+        decks.requirePublishedDeck(userId, deckId);
         return wordRepository.findAllForDeck(deckId).stream().map(DeckWordResponse::from).toList();
     }
 }

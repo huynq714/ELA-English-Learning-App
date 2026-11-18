@@ -1,0 +1,44 @@
+[
+  {
+    "key": "a1-time-frequency",
+    "title": "Thời gian và tần suất",
+    "level": "A1",
+    "source": "APP",
+    "source_label": null
+  },
+  {
+    "key": "a1-location-movement",
+    "title": "Vị trí và di chuyển",
+    "level": "A1",
+    "source": "APP",
+    "source_label": null
+  },
+  {
+    "key": "a1-communication-feelings",
+    "title": "Giao tiếp và cảm xúc",
+    "level": "A1",
+    "source": "APP",
+    "source_label": null
+  },
+  {
+    "key": "a2-education",
+    "title": "Học tập",
+    "level": "A2",
+    "source": "CEFR_J",
+    "source_label": "Education"
+  },
+  {
+    "key": "a2-work-jobs",
+    "title": "Công việc và nghề nghiệp",
+    "level": "A2",
+    "source": "CEFR_J",
+    "source_label": "Work and jobs"
+  },
+  {
+    "key": "a2-town-shopping",
+    "title": "Thành phố và mua sắm",
+    "level": "A2",
+    "source": "CEFR_J",
+    "source_label": "Things in the town, shops and shopping"
+  }
+]

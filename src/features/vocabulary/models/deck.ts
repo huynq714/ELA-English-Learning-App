@@ -3,6 +3,8 @@ export interface Deck {
   title: string;
   description: string | null;
   level: string | null;
+  topicKey: string;
+  topic: string;
   isPublished: boolean;
   createdAt: string;
 }
@@ -14,6 +16,7 @@ export function parseDeck(value: unknown): Deck {
 
   const deck = value as Record<string, unknown>;
   if (typeof deck.id !== 'string' || typeof deck.title !== 'string'
+    || typeof deck.topicKey !== 'string' || typeof deck.topic !== 'string'
     || typeof deck.isPublished !== 'boolean' || typeof deck.createdAt !== 'string'
     || (deck.description !== null && typeof deck.description !== 'string')
     || (deck.level !== null && typeof deck.level !== 'string')) {
@@ -25,6 +28,8 @@ export function parseDeck(value: unknown): Deck {
     title: deck.title,
     description: deck.description,
     level: deck.level,
+    topicKey: deck.topicKey,
+    topic: deck.topic,
     isPublished: deck.isPublished,
     createdAt: deck.createdAt,
   };

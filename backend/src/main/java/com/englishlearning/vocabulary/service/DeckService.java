@@ -1,5 +1,7 @@
 package com.englishlearning.vocabulary.service;
 
+import com.englishlearning.profile.entity.UserProfile;
+import com.englishlearning.profile.repository.UserProfileRepository;
 import com.englishlearning.vocabulary.dto.DeckCreateRequest;
 import com.englishlearning.vocabulary.dto.DeckPatchRequest;
 import com.englishlearning.vocabulary.dto.DeckResponse;
@@ -15,23 +17,30 @@ import java.util.UUID;
 public class DeckService {
 
     private final DeckRepository deckRepository;
+    private final UserProfileRepository profiles;
 
-    public DeckService(DeckRepository deckRepository) {
+    public DeckService(DeckRepository deckRepository, UserProfileRepository profiles) {
         this.deckRepository = deckRepository;
+        this.profiles = profiles;
     }
 
     @Transactional(readOnly = true)
-    public List<DeckResponse> listPublished() {
-        return deckRepository.findAllByPublishedTrueOrderByCreatedAtDesc().stream()
+    public List<DeckResponse> listPublished(UUID userId) {
+        return deckRepository.findAllByPublishedTrueAndLevelAndTopicKeyIsNotNullOrderByTopicKey(profileLevel(userId)).stream()
                 .map(DeckResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public DeckResponse getPublished(UUID id) {
-        return deckRepository.findByIdAndPublishedTrue(id)
-                .map(DeckResponse::from)
+    public Deck requirePublishedDeck(UUID userId, UUID id) {
+        return deckRepository.findByIdAndPublishedTrueAndLevelAndTopicKeyIsNotNull(id, profileLevel(userId))
                 .orElseThrow(() -> new DeckNotFoundException(id));
+    }
+
+    private String profileLevel(UUID userId) {
+        return profiles.findById(userId).map(UserProfile::getEnglishLevel)
+                .filter(level -> !level.isBlank())
+                .orElseThrow(ProfileLevelRequiredException::new);
     }
 
     @Transactional
@@ -57,6 +66,9 @@ public class DeckService {
 
         Deck deck = deckRepository.findById(id)
                 .orElseThrow(() -> new DeckNotFoundException(id));
+        if (deck.getTopicKey() != null && request.level() != null && !request.level().equals(deck.getLevel())) {
+            throw new IllegalArgumentException("The level of an imported topic deck is fixed by its source");
+        }
         deck.update(
                 request.title() == null ? null : request.title().trim(),
                 request.description(),

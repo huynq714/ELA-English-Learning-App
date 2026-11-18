@@ -10,6 +10,10 @@ public record DeckResponse(
         String title,
         String description,
         String level,
+        String topicKey,
+        String topic,
+        String topicSource,
+        String topicSourceLabel,
         boolean isPublished,
         OffsetDateTime createdAt
 ) {
@@ -20,6 +24,10 @@ public record DeckResponse(
                 deck.getTitle(),
                 deck.getDescription(),
                 deck.getLevel(),
+                deck.getTopicKey(),
+                deck.getTopic(),
+                deck.getTopicSource(),
+                deck.getTopicSourceLabel(),
                 deck.isPublished(),
                 deck.getCreatedAt()
         );

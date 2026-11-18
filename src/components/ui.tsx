@@ -30,19 +30,25 @@ export function Asset({ source, width, height = width, style, label }:
 export function Screen({ children, header, footer, contentStyle, keyboard = false, testID }:
   PropsWithChildren<{
     header?: ReactNode; footer?: ReactNode; contentStyle?: StyleProp<ViewStyle>;
-    keyboard?: boolean; testID: string;
+    keyboard?: boolean | 'scroll-insets'; testID: string;
   }>) {
+  const scrollInsets = keyboard === 'scroll-insets';
+  const content = <View style={styles.screen} testID={testID}>
+    {header}
+    <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, contentStyle]}
+      automaticallyAdjustKeyboardInsets={scrollInsets && Platform.OS === 'ios' ? true : undefined}
+      removeClippedSubviews={scrollInsets ? false : undefined}
+      keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      {children}
+    </ScrollView>
+    {footer}
+  </View>;
+
   return <SafeAreaView style={styles.safe} edges={['top', 'right', 'bottom', 'left']}>
-    <KeyboardAvoidingView style={styles.safe} behavior={keyboard && Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.screen} testID={testID}>
-        {header}
-        <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, contentStyle]}
-          keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {children}
-        </ScrollView>
-        {footer}
-      </View>
-    </KeyboardAvoidingView>
+    {scrollInsets ? content : <KeyboardAvoidingView style={styles.safe}
+      behavior={keyboard === true && Platform.OS === 'ios' ? 'padding' : undefined}>
+      {content}
+    </KeyboardAvoidingView>}
   </SafeAreaView>;
 }
 

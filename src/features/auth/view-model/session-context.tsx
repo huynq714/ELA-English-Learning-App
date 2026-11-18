@@ -10,14 +10,14 @@ type SessionState =
   | { status: 'restoring' }
   | { status: 'restore-error'; message: string }
   | { status: 'signed-out'; message?: string }
-  | { status: 'signed-in'; session: AccessSession; user: CurrentUser };
+  | { status: 'signed-in'; session: AccessSession; user: CurrentUser; profileLevel?: string };
 
 type SessionViewModel = {
   state: SessionState;
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   changePassword: (input: ChangePasswordInput) => Promise<void>;
-  updateDisplayName: (userId: string, displayName: string) => void;
+  updateProfile: (userId: string, displayName: string, englishLevel: string) => void;
   logout: () => Promise<void>;
   retryRestore: () => void;
   authenticated: <T>(action: (token: string) => Promise<T>) => Promise<T>;
@@ -102,9 +102,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await saveSession(await authRepository.register(input));
   }, [saveSession]);
 
-  const updateDisplayName = useCallback((userId: string, displayName: string) => {
+  const updateProfile = useCallback((userId: string, displayName: string, englishLevel: string) => {
     setState(previous => previous.status === 'signed-in' && previous.user.id === userId
-      ? { ...previous, user: { ...previous.user, displayName } }
+      ? { ...previous, user: { ...previous.user, displayName }, profileLevel: englishLevel }
       : previous);
   }, []);
 
@@ -139,7 +139,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await saveSession(next);
   }, [authenticated, saveSession]);
 
-  return <SessionContext.Provider value={{ state, login, register, changePassword, updateDisplayName, logout, retryRestore, authenticated }}>
+  return <SessionContext.Provider value={{ state, login, register, changePassword, updateProfile, logout, retryRestore, authenticated }}>
     {children}
   </SessionContext.Provider>;
 }

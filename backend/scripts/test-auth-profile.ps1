@@ -61,7 +61,12 @@ try {
     $env:PGPASSWORD = $password
     $env:PGCLIENTENCODING = 'UTF8'
     $client = @('-X','-w','-q','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-p',$DatabasePort,'-U','auth_check','-d','postgres')
-    & "$PostgresBin\psql.exe" @client -f database/week3/schema.sql -f database/week4/migrations/V1_2__source_vocabulary_fields.sql -f database/week4/migrations/V1_3__quiz_question_snapshot.sql -f database/week4/import/data/apply_a1_import.sql
+    & "$PostgresBin\psql.exe" @client -f database/week3/schema.sql `
+        -f database/week4/migrations/V1_2__source_vocabulary_fields.sql `
+        -f database/week4/migrations/V1_3__quiz_question_snapshot.sql `
+        -f database/week4/import/data/apply_a1_import.sql `
+        -f database/week4/migrations/V1_4__topic_deck_catalog.sql `
+        -f database/week4/import/data/apply_topic_decks.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $bytes = [byte[]]::new(32)
@@ -102,7 +107,7 @@ try {
     if ($LASTEXITCODE) { throw "Auth HTTP checks failed. See $isolated" }
     $sql = 'SELECT (SELECT count(*) FROM users WHERE password_hash LIKE ''$2a$%''), (SELECT count(*) FROM user_profiles), (SELECT count(*) FROM user_profiles p JOIN users u ON u.id = p.user_id WHERE p.english_level = ''B1'' AND p.daily_goal_minutes = 30 AND u.display_name = ''Auth Smoke Renamed'' AND p.avatar_url LIKE ''data:image/jpeg;base64,%''), (SELECT count(*) FROM words), (SELECT count(*) FROM deck_words);'
     $actual = & "$PostgresBin\psql.exe" @client -Atc $sql
-    if ($LASTEXITCODE -ne 0 -or $actual -ne '3|3|1|43|43') { throw "Unexpected database verification result: $actual" }
+    if ($LASTEXITCODE -ne 0 -or $actual -ne '3|3|1|115|133') { throw "Unexpected database verification result: $actual" }
     "PASS PostgreSQL persisted BCrypt users|profiles|updated profile with name and avatar|words|links: $actual"
 } finally {
     if ($metro -and -not $metro.HasExited) { Stop-Process -InputObject $metro -ErrorAction SilentlyContinue }

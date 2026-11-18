@@ -1,7 +1,6 @@
 import { apiClient } from '@/services/api-client';
 
-export const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
-export type EnglishLevel = typeof levels[number];
+import type { EnglishLevel } from '../models/english-level';
 
 export type UserProfile = {
   userId: string;

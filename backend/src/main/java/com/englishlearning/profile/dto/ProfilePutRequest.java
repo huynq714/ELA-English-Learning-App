@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+import static com.englishlearning.profile.entity.UserProfile.ENGLISH_LEVEL_PATTERN;
+
 public record ProfilePutRequest(
         @NotBlank(message = "englishLevel is required")
-        @Pattern(regexp = "A1|A2|B1|B2|C1|C2", message = "englishLevel must be A1, A2, B1, B2, C1, or C2")
+        @Pattern(regexp = ENGLISH_LEVEL_PATTERN, message = "englishLevel must be A1, A2, B1, B2, C1, or C2")
         String englishLevel,
 
         @NotNull(message = "dailyGoalMinutes is required")

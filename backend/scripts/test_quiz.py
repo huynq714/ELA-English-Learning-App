@@ -70,26 +70,25 @@ def submit(quiz, token, score):
 def before_restart(state):
     password = os.environ["QUIZ_SMOKE_PASSWORD"]
     email = f"quiz-smoke-{uuid4().hex}@example.test"
-    register = {"email": email, "displayName": "Quiz Smoke", "password": password, "confirmPassword": password}
+    register = {"email": email, "displayName": "Quiz Smoke", "password": password, "confirmPassword": password,
+                "englishLevel": "A1"}
     user = expect("register quiz user", "POST", "/auth/register", 201, payload=register)
     token = user["accessToken"]
     other = expect("register second user", "POST", "/auth/register", 201,
                    payload={**register, "email": f"quiz-other-{uuid4().hex}@example.test"})["accessToken"]
-    published = expect("published decks", "GET", "/decks", 200)
+    published = expect("published A1 topic decks", "GET", "/decks", 200, access=token)
     counts = {}
     word_lists = {}
     for deck in published:
         deck_id = deck["id"]
-        words = expect("real imported words", "GET", f"/decks/{deck_id}/words", 200)
+        words = expect("real imported words", "GET", f"/decks/{deck_id}/words", 200, access=token)
         assert all(word["sourceMetadata"]["vietnamese"]["reviewStatus"] == "VERIFIED" for word in words)
         counts[deck_id] = len(words)
         word_lists[deck_id] = words
-    assert sorted(counts.values()) == [5, 18, 20]
-    print("PASS PostgreSQL/API has 43 verified words in decks of 5, 18, 20")
+    assert sorted(counts.values()) == [15, 15, 15]
+    print("PASS PostgreSQL/API has 45 verified words across three A1 topic decks")
 
-    deck = next(deck_id for deck_id, size in counts.items() if size == 5)
-    bigger = next(deck_id for deck_id, size in counts.items() if size == 18)
-    largest = next(deck_id for deck_id, size in counts.items() if size == 20)
+    deck, second, third = (item["id"] for item in published)
     word_id = word_lists[deck][0]["id"]
     progress = f"/decks/{deck}/study-progress"
     assert expect("open flashcards does not create progress", "GET", progress, 200,
@@ -102,12 +101,13 @@ def before_restart(state):
     assert expect("resume the same word", "GET", progress, 200,
                   access=token)["lastStudiedWordId"] == word_id
     expect("word outside deck rejected", "POST", progress, 404,
-           access=token, payload={"wordId": word_lists[bigger][0]["id"]})
+           access=token, payload={"wordId": word_lists[second][0]["id"]})
     expect("progress requires JWT", "GET", progress, 401)
     expect("quiz rejects invalid JWT", "POST", START, 401, access="not-a-jwt", payload={"deckId": deck})
     expect("missing deck rejected", "POST", START, 404, access=token, payload={"deckId": str(uuid4())})
 
-    small = sql("INSERT INTO decks(title) VALUES ('Empty quiz test') RETURNING id")
+    small = sql("""INSERT INTO decks(title, level, topic_key, topic, topic_source)
+                   VALUES ('Empty quiz test', 'A1', 'a1-quiz-test', 'Quiz test', 'APP') RETURNING id""")
     expect("deck has fewer than five words", "POST", START, 422, access=token, payload={"deckId": small})
     sql(f"INSERT INTO deck_words(deck_id, word_id) SELECT '{small}', id FROM words WHERE headword IN ('about', 'above', 'around')")
     expect("ambiguous verified deck rejected", "POST", START, 422, access=token, payload={"deckId": small})
@@ -180,21 +180,22 @@ def before_restart(state):
     before = snapshot(attempt_id)["questions"]
     after = snapshot(retake["attemptId"])["questions"]
     assert [item["wordId"] for item in before] != [item["wordId"] for item in after]
-    assert all(next(item for item in before if item["wordId"] == question["wordId"])["correctOption"]
-               != question["correctOption"] for question in after)
+    before_positions = {question["wordId"]: question["correctOption"] for question in before}
+    assert all(before_positions[question["wordId"]] != question["correctOption"]
+               for question in after if question["wordId"] in before_positions)
     passed = submit(retake, token, 3)
     assert expect("read a stored pass", "GET", f"{START}/{passed['attemptId']}/result", 200, access=token) == passed
     five = submit(start(), token, 5)
-    for extra_deck in (bigger, largest):
+    for extra_deck in (second, third):
         for word in word_lists[extra_deck]:
             expect("study flashcard in the other deck", "POST", f"/decks/{extra_deck}/study-progress",
                    200, access=token, payload={"wordId": word["id"]})
-    zero_quiz = expect("second deck quiz", "POST", START, 200, access=token, payload={"deckId": bigger})
-    check_quiz(zero_quiz, word_lists[bigger])
+    zero_quiz = expect("second deck quiz", "POST", START, 200, access=token, payload={"deckId": second})
+    check_quiz(zero_quiz, word_lists[second])
     zero = submit(zero_quiz, token, 0)
 
-    open_quiz = expect("third deck quiz", "POST", START, 200, access=token, payload={"deckId": largest})
-    check_quiz(open_quiz, word_lists[largest])
+    open_quiz = expect("third deck quiz", "POST", START, 200, access=token, payload={"deckId": third})
+    check_quiz(open_quiz, word_lists[third])
     open_id = open_quiz["attemptId"]
     tested_word = snapshot(open_id)["questions"][0]["wordId"]
     sql(f"""BEGIN;
@@ -215,10 +216,10 @@ def before_restart(state):
     saved = expect("save a graded answer before restart", "POST", f"{START}/{open_id}/answers", 200,
                    access=token, payload=choice)
     open_quiz["answered"] = [saved]
-    assert sql("SELECT count(*) FROM words") == "43"
-    print("PASS Vocabulary still contains the original 43 words")
+    assert sql("SELECT count(*) FROM words") == "115"
+    print("PASS Topic imports preserve 43 legacy words and add 72 new words")
     state.write_text(json.dumps({"email": email, "results": [failed, passed, five, zero],
-                                 "openQuiz": open_quiz, "deckId": largest}), encoding="utf-8")
+                                 "openQuiz": open_quiz, "deckId": third}), encoding="utf-8")
 
 
 def after_restart(state):

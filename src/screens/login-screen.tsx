@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 
 import { useDemoNotice } from '@/components/demo-notice';
 import { AppText, AppTextInput, Asset, PrimaryButton, Screen } from '@/components/ui';
 import { useSession } from '@/features/auth/view-model/session-context';
 import { useAuthForm } from '@/features/auth/view-model/use-auth-form';
+import { levelLabels, levels } from '@/features/profile/models/english-level';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
@@ -16,30 +17,57 @@ export function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
   const { state } = useSession();
   const form = useAuthForm(mode);
   const [hidePassword, setHidePassword] = useState(true);
+  const [showLevels, setShowLevels] = useState(false);
   const register = mode === 'register';
   const heading = register ? 'Đăng ký' : 'Đăng nhập';
-  return <Screen testID={`screen-${mode}`} keyboard contentStyle={styles.form}>
+  const levelValue = form.englishLevel ? `${form.englishLevel} — ${levelLabels[form.englishLevel]}` : 'Chọn trình độ';
+  return <Screen testID={`screen-${mode}`} keyboard="scroll-insets" contentStyle={styles.form}>
     <View style={styles.logo}><Asset source={assets.bookOpen} width={30} /></View>
     <AppText size={30} weight="bold" accessibilityRole="header">{heading}</AppText>
     <View style={styles.credentials}>
       {register && <AppTextInput accessibilityLabel="Tên hiển thị" placeholder="Tên hiển thị"
         autoComplete="name" maxLength={100} editable={!form.pending} value={form.displayName}
-        onChangeText={form.setDisplayName} icon={<Asset source={figmaAssets.home.userRound} width={22} />} />}
+        onChangeText={form.setDisplayName} inputStyle={styles.input}
+        icon={<Asset source={figmaAssets.home.userRound} width={22} />} />}
       <AppTextInput accessibilityLabel="Email" placeholder="Email" keyboardType="email-address"
-        autoCapitalize="none" autoCorrect={false} textContentType="emailAddress" maxLength={255}
-        editable={!form.pending} value={form.email} onChangeText={form.setEmail}
+        autoCapitalize="none" autoCorrect={false} textContentType={register ? 'emailAddress' : 'username'} maxLength={255}
+        editable={!form.pending} value={form.email} onChangeText={form.setEmail} inputStyle={styles.input}
         icon={<Asset source={assets.mail} width={22} />} />
       <AppTextInput accessibilityLabel="Mật khẩu" placeholder="Mật khẩu" secureTextEntry={hidePassword}
         autoCapitalize="none" autoCorrect={false} textContentType={register ? 'newPassword' : 'password'}
-        maxLength={72} editable={!form.pending} value={form.password} onChangeText={form.setPassword}
+        maxLength={72} editable={!form.pending} value={form.password} onChangeText={form.setPassword} inputStyle={styles.input}
         icon={<Asset source={assets.lockKeyhole} width={22} />}
         trailing={<Pressable accessibilityRole="button" accessibilityLabel={hidePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu'}
           onPress={() => setHidePassword(value => !value)} hitSlop={8}><Asset source={assets.eyeOff} width={19} /></Pressable>} />
       {register && <AppTextInput accessibilityLabel="Xác nhận mật khẩu" placeholder="Xác nhận mật khẩu"
         secureTextEntry={hidePassword} autoCapitalize="none" autoCorrect={false} textContentType="newPassword"
         maxLength={72} editable={!form.pending} value={form.confirmPassword} onChangeText={form.setConfirmPassword}
+        inputStyle={styles.input}
         icon={<Asset source={assets.lockKeyhole} width={22} />} />}
       {register && <AppText size={13} color={colors.muted}>Ít nhất 8 ký tự, có chữ và số.</AppText>}
+      {register && <View style={styles.levelGroup}>
+        <AppText size={14} weight="medium">Trình độ tiếng Anh</AppText>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Trình độ tiếng Anh, ${levelValue}`}
+          accessibilityState={{ expanded: showLevels, disabled: form.pending }} disabled={form.pending}
+          onPress={() => { Keyboard.dismiss(); setShowLevels(open => !open); }}
+          style={styles.levelField}>
+          <AppText style={styles.levelText} color={form.englishLevel ? colors.textPrimary : colors.muted}>{levelValue}</AppText>
+          <Asset source={figmaAssets.home.chevronRight} width={15}
+            style={showLevels ? { transform: [{ rotate: '90deg' }] } : undefined} />
+        </Pressable>
+        {showLevels && <View style={styles.levelOptions}>
+          {levels.map(level => {
+            const selected = form.englishLevel === level;
+            return <Pressable key={level} accessibilityRole="button" accessibilityState={{ selected, disabled: form.pending }}
+              disabled={form.pending} style={[styles.levelOption, selected && styles.selectedLevel]}
+              onPress={() => { form.selectEnglishLevel(level); setShowLevels(false); }}>
+              <AppText size={13} color={selected ? colors.primary : colors.textPrimary}>
+                {level} — {levelLabels[level]}
+              </AppText>
+            </Pressable>;
+          })}
+        </View>}
+      </View>}
       {!register && <Pressable accessibilityRole="button" onPress={() => notice('Khôi phục mật khẩu')} style={styles.recovery}>
         <AppText size={13} weight="semibold" color={colors.primary}>Quên mật khẩu?</AppText>
       </Pressable>}
@@ -80,6 +108,15 @@ const styles = StyleSheet.create({
   form: { alignItems: 'center', gap: 27, paddingTop: 48, paddingHorizontal: 24, paddingBottom: 22 },
   logo: { width: 50, height: 50, backgroundColor: colors.primary, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   credentials: { width: '100%', paddingTop: 15, gap: 16 },
+  input: { fontSize: 16 },
+  levelGroup: { gap: 7 },
+  levelField: { minHeight: 50, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.border,
+    borderRadius: 10, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  levelText: { flex: 1 },
+  levelOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  levelOption: { flexBasis: '48%', flexGrow: 1, minHeight: 44, paddingHorizontal: 10, paddingVertical: 7,
+    borderWidth: 1, borderColor: colors.border, borderRadius: 8, backgroundColor: colors.surface, justifyContent: 'center' },
+  selectedLevel: { borderColor: colors.primary, backgroundColor: colors.lavender },
   recovery: { alignSelf: 'flex-end', paddingTop: 3, minHeight: 19 },
   dividerRow: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 14 },
   divider: { flex: 1, height: 1, backgroundColor: colors.screenBorder },
