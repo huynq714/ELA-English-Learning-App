@@ -1,21 +1,45 @@
 param(
     [string]$PostgresBin = 'C:\Program Files\PostgreSQL\18\bin',
     [int]$DatabasePort = 55436,
-    [int]$ApiPort = 58125
+    [int]$ApiPort = 58125,
+    [ValidateSet('Auth', 'Quiz')]
+    [string]$Suite = 'Auth',
+    [switch]$Web,
+    [int]$WebPort = 58126
 )
 
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $isolated = Join-Path $root ('.artifacts\week4-auth-' + [Guid]::NewGuid().ToString('N'))
 $envNames = @('PGPASSWORD','PGCLIENTENCODING','DB_USERNAME','DB_PASSWORD','SPRING_DATASOURCE_URL',
-              'AUTH_JWT_SECRET','AUTH_TOKEN_TTL','AUTH_SMOKE_PORT')
+              'AUTH_JWT_SECRET','AUTH_TOKEN_TTL','AUTH_SMOKE_PORT','QUIZ_SMOKE_PSQL',
+              'QUIZ_SMOKE_DB_PORT','QUIZ_SMOKE_STATE','QUIZ_SMOKE_PASSWORD','QUIZ_WEB_PORT',
+              'EXPO_PUBLIC_API_BASE_URL','EXPO_OFFLINE','CI')
 $previous = @{}
 foreach ($key in $envNames) { $previous[$key] = [Environment]::GetEnvironmentVariable($key) }
 $api = $null
+$metro = $null
 $started = $false
+
+function Start-SmokeBackend([string]$label) {
+    $appLog = Join-Path $isolated "$label.log"
+    $javaArgs = @('-cp', ('"' + $classpath + '"'), 'com.englishlearning.EnglishLearningApplication',
+        '--server.address=127.0.0.1', "--server.port=$ApiPort", '--spring.profiles.active=default')
+    $script:api = Start-Process -FilePath (Join-Path $javaHome 'bin\java.exe') -ArgumentList $javaArgs -PassThru -WindowStyle Hidden -RedirectStandardOutput $appLog -RedirectStandardError (Join-Path $isolated "$label-error.log")
+    for ($i = 0; $i -lt 65; $i++) {
+        if ($script:api.HasExited) { break }
+        try {
+            $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ApiPort/api/v1/health" -TimeoutSec 2
+            if ($r.StatusCode -eq 200) { return }
+        } catch {}
+        Start-Sleep -Milliseconds 650
+    }
+    throw "The isolated Backend did not start. See $appLog"
+}
+
 Push-Location $root
 try {
-    $listeners = netstat -ano -p TCP | Select-String -Pattern ":(${DatabasePort}|${ApiPort})\s+\S+\s+LISTENING"
+    $listeners = netstat -ano -p TCP | Select-String -Pattern ":(${DatabasePort}|${ApiPort}|${WebPort})\s+\S+\s+LISTENING"
     if ($listeners) { throw 'Use unused test ports for PostgreSQL and the API' }
     $report = Get-ChildItem backend/target/surefire-reports -Filter 'TEST-*.xml' | Select-Object -First 1
     [xml]$reportXml = Get-Content -LiteralPath $report.FullName -Raw
@@ -37,7 +61,7 @@ try {
     $env:PGPASSWORD = $password
     $env:PGCLIENTENCODING = 'UTF8'
     $client = @('-X','-w','-q','-v','ON_ERROR_STOP=1','-h','127.0.0.1','-p',$DatabasePort,'-U','auth_check','-d','postgres')
-    & "$PostgresBin\psql.exe" @client -f database/week3/schema.sql -f database/week4/migrations/V1_2__source_vocabulary_fields.sql -f database/week4/import/data/apply_a1_import.sql
+    & "$PostgresBin\psql.exe" @client -f database/week3/schema.sql -f database/week4/migrations/V1_2__source_vocabulary_fields.sql -f database/week4/migrations/V1_3__quiz_question_snapshot.sql -f database/week4/import/data/apply_a1_import.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $bytes = [byte[]]::new(32)
@@ -49,27 +73,39 @@ try {
     $env:DB_USERNAME = 'auth_check'
     $env:DB_PASSWORD = $password
     $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:$DatabasePort/postgres"
-    $appLog = Join-Path $isolated 'spring.log'
-    $javaArgs = @('-cp', ('"' + $classpath + '"'), 'com.englishlearning.EnglishLearningApplication',
-        '--server.address=127.0.0.1', "--server.port=$ApiPort", '--spring.profiles.active=default')
-    $api = Start-Process -FilePath (Join-Path $javaHome 'bin\java.exe') -ArgumentList $javaArgs -PassThru -WindowStyle Hidden -RedirectStandardOutput $appLog -RedirectStandardError (Join-Path $isolated 'spring-error.log')
-    $ready = $false
-    for ($i = 0; $i -lt 65; $i++) {
-        if ($api.HasExited) { break }
-        try {
-            $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ApiPort/api/v1/health" -TimeoutSec 2
-            if ($r.StatusCode -eq 200) { $ready = $true; break }
-        } catch {}
-        Start-Sleep -Milliseconds 650
+    Start-SmokeBackend 'spring'
+    if ($Suite -eq 'Quiz') {
+        $env:QUIZ_SMOKE_PSQL = "$PostgresBin\psql.exe"
+        $env:QUIZ_SMOKE_DB_PORT = [string]$DatabasePort
+        $env:QUIZ_SMOKE_STATE = Join-Path $isolated 'quiz-state.json'
+        $env:QUIZ_SMOKE_PASSWORD = 'Quiz7' + [Guid]::NewGuid().ToString('N')
+        python backend/scripts/test_quiz.py before-restart
+        if ($LASTEXITCODE) { throw "Quiz HTTP/SQL checks failed. See $isolated" }
+        Stop-Process -InputObject $api
+        if (-not $api.WaitForExit(10000)) { throw 'The first isolated Backend process did not exit' }
+        Start-SmokeBackend 'spring-restarted'
+        python backend/scripts/test_quiz.py after-restart
+        if ($LASTEXITCODE) { throw "Restart checks failed. See $isolated" }
+        if ($Web) {
+            $env:EXPO_PUBLIC_API_BASE_URL = "http://127.0.0.1:$WebPort"
+            $env:EXPO_OFFLINE = '1'
+            $env:CI = '1'
+            $env:QUIZ_WEB_PORT = "$WebPort"
+            $metro = Start-Process -FilePath 'node.exe' -ArgumentList @('node_modules/expo/bin/cli', 'start', '--localhost', '--port', "$WebPort", '--max-workers', '2') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $isolated 'expo.log') -RedirectStandardError (Join-Path $isolated 'expo-error.log')
+            node backend/scripts/test-quiz-web.cjs
+            if ($LASTEXITCODE) { throw "Quiz web E2E failed. See $isolated" }
+        }
+        "Quiz evidence directory: $isolated"
+        return
     }
-    if (-not $ready) { throw "The isolated Backend did not start. See $appLog" }
     python backend/scripts/test_auth_profile.py
-    if ($LASTEXITCODE) { throw "Auth HTTP checks failed. See $appLog" }
+    if ($LASTEXITCODE) { throw "Auth HTTP checks failed. See $isolated" }
     $sql = 'SELECT (SELECT count(*) FROM users WHERE password_hash LIKE ''$2a$%''), (SELECT count(*) FROM user_profiles), (SELECT count(*) FROM user_profiles p JOIN users u ON u.id = p.user_id WHERE p.english_level = ''B1'' AND p.daily_goal_minutes = 30 AND u.display_name = ''Auth Smoke Renamed'' AND p.avatar_url LIKE ''data:image/jpeg;base64,%''), (SELECT count(*) FROM words), (SELECT count(*) FROM deck_words);'
     $actual = & "$PostgresBin\psql.exe" @client -Atc $sql
     if ($LASTEXITCODE -ne 0 -or $actual -ne '3|3|1|43|43') { throw "Unexpected database verification result: $actual" }
     "PASS PostgreSQL persisted BCrypt users|profiles|updated profile with name and avatar|words|links: $actual"
 } finally {
+    if ($metro -and -not $metro.HasExited) { Stop-Process -InputObject $metro -ErrorAction SilentlyContinue }
     if ($api -and -not $api.HasExited) { Stop-Process -InputObject $api -ErrorAction SilentlyContinue }
     if ($passwordFile -and (Test-Path -LiteralPath $passwordFile)) { Remove-Item -LiteralPath $passwordFile }
     if ($started) { & "$PostgresBin\pg_ctl.exe" -D $data -w stop -m fast }

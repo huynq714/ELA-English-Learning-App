@@ -12,6 +12,13 @@ export interface Word {
   sourceMetadata: Record<string, unknown>;
 }
 
+export function verifiedVietnamese(word: Word): string | null {
+  const source = word.sourceMetadata.vietnamese;
+  return source && typeof source === 'object' && 'reviewStatus' in source && source.reviewStatus === 'VERIFIED'
+    ? word.meaningVi?.trim() || null
+    : null;
+}
+
 export function parseWord(value: unknown): Word {
   if (!value || typeof value !== 'object') throw new Error('Backend returned an invalid word.');
   const word = value as Record<string, unknown>;

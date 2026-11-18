@@ -1,9 +1,13 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import * as Speech from 'expo-speech';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useState } from 'react';
 
-import { AppHeader, AppText, Asset, ProgressBar, Screen } from '@/components/ui';
+import { AppText, Asset, PrimaryButton, ProgressBar, Screen } from '@/components/ui';
+import { StudyFlashcard } from '@/features/vocabulary/components/study-flashcard';
 import { useDeckWordsViewModel } from '@/features/vocabulary/hooks/use-deck-words-view-model';
+import { useStudyProgress } from '@/features/vocabulary/hooks/use-study-progress';
+import { verifiedVietnamese } from '@/features/vocabulary/models/word';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
@@ -22,100 +26,125 @@ export default function FlashcardScreen() {
   const deckId = Array.isArray(params.deckId) ? params.deckId[0] : params.deckId;
   const deckTitle = Array.isArray(params.deckTitle) ? params.deckTitle[0] : params.deckTitle;
   const { words, isLoading, isRefreshing, error, refresh } = useDeckWordsViewModel(deckId);
-  const [index, setIndex] = useState(0);
-  const [showDefinition, setShowDefinition] = useState(false);
-  const [ratingsByWord, setRatingsByWord] = useState<Partial<Record<string, Rating>>>({});
-  const activeIndex = Math.max(0, Math.min(index, words.length - 1));
-  const word = words[activeIndex];
+  const learning = useStudyProgress(deckId);
+  const [ratedIds, setRatedIds] = useState<Set<string>>(() => new Set());
+  const [deferredIds, setDeferredIds] = useState<string[]>([]);
+  const [cardTurn, setCardTurn] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [speechFailed, setSpeechFailed] = useState(false);
+  const speechVersion = useRef(0);
 
-  const openCard = (nextIndex: number) => {
-    setIndex(nextIndex);
-    setShowDefinition(false);
-  };
+  const stopSpeech = useCallback(() => {
+    speechVersion.current++;
+    void Speech.stop().catch(() => {});
+  }, []);
+  useFocusEffect(useCallback(() => stopSpeech, [stopSpeech]));
 
-  const rate = (rating: Rating) => {
-    if (!word) return;
-    setRatingsByWord(previous => ({ ...previous, [word.id]: rating }));
-    if (rating === 'Again') {
-      setShowDefinition(false);
-    } else if (activeIndex < words.length - 1) {
-      openCard(activeIndex + 1);
+  const requiredIds = new Set([
+    ...(learning.progress?.unstudiedWordIds ?? []),
+    ...(learning.progress?.remainingReviewWordIds ?? []),
+  ]);
+  const loading = isLoading || (learning.loading && !learning.progress);
+  const unavailable = !!error || !!learning.loadError;
+  const done = finished && requiredIds.size === 0 && !learning.loading;
+  const remaining = words.filter(item => requiredIds.size ? requiredIds.has(item.id) : !ratedIds.has(item.id));
+  const next = remaining.find(item => !deferredIds.includes(item.id))
+    ?? deferredIds.map(id => remaining.find(item => item.id === id)).find(item => item !== undefined);
+  const card = loading || unavailable || done ? undefined : next;
+
+  const saveRating = async (wordId: string) => {
+    const saved = await learning.study(wordId);
+    if (!saved) return;
+    setRatedIds(previous => new Set(previous).add(wordId));
+    setDeferredIds(previous => previous.filter(id => id !== wordId));
+    if (remaining.length === 1 && !saved.unstudiedWordIds.length && !saved.remainingReviewWordIds.length) {
+      setFinished(true);
     }
   };
 
+  const rate = (rating: Rating) => {
+    if (!card || learning.pending || learning.unsavedWordId) return;
+    stopSpeech();
+    setSpeechFailed(false);
+    if (rating === 'Again') {
+      setDeferredIds(previous => [...previous.filter(id => id !== card.id), card.id]);
+      setCardTurn(previous => previous + 1);
+    } else {
+      void saveRating(card.id);
+    }
+  };
+
+  const speak = async (text: string) => {
+    const version = ++speechVersion.current;
+    const showError = () => {
+      if (version === speechVersion.current) setSpeechFailed(true);
+    };
+    setSpeechFailed(false);
+    try {
+      await Speech.stop();
+      if (version === speechVersion.current) {
+        Speech.speak(text, { language: 'en-US', onError: showError });
+      }
+    } catch {
+      showError();
+    }
+  };
+
+  const backToVocabulary = () => router.dismissTo('/vocabulary');
+
   return <Screen testID="screen-flashcard" contentStyle={styles.content}
-    header={<AppHeader title={deckTitle || 'Vocabulary'} trailing={
-      <AppText size={14} weight="semibold" color={colors.muted}>{words.length ? `${activeIndex + 1}/${words.length}` : '0/0'}</AppText>
-    } />}
-    footer={word && <View style={styles.footer}>
-      <View style={styles.actions}>
-        <Pressable accessibilityRole="button" disabled={activeIndex === 0} onPress={() => openCard(activeIndex - 1)} style={styles.action}>
-          <AppText color={activeIndex === 0 ? colors.muted : colors.primary}>Previous</AppText>
-        </Pressable>
-        <Pressable accessibilityRole="button" disabled={activeIndex === words.length - 1} onPress={() => openCard(activeIndex + 1)} style={styles.action}>
-          <AppText color={activeIndex === words.length - 1 ? colors.muted : colors.primary}>Next</AppText>
-        </Pressable>
-      </View>
-      <View style={styles.ratings}>
-        {ratings.map(({ label, icon, background, color }) => {
-          const selected = ratingsByWord[word.id] === label;
-          return <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected }}
-            onPress={() => rate(label)}
-            style={[styles.rating, { backgroundColor: background, borderColor: selected ? color : 'transparent' }]}>
-            <Asset source={icon} width={23} />
-            <AppText size={13} weight="bold" color={color}>{label}</AppText>
-          </Pressable>;
-        })}
-      </View>
+    header={(card || done) && <View style={styles.progress}>
+      <ProgressBar value={done ? 1 : (words.length - remaining.length + 1) / words.length} />
+    </View>}
+    footer={card && <View style={styles.ratings}>
+      {ratings.map(({ label, icon, background, color }) => <Pressable key={label} accessibilityRole="button"
+        disabled={learning.pending || !!learning.unsavedWordId} onPress={() => rate(label)}
+        style={({ pressed }) => [styles.rating, { backgroundColor: background }, pressed && styles.pressed]}>
+        <Asset source={icon} width={24} />
+        <AppText size={14} weight="bold" color={color}>{label}</AppText>
+      </Pressable>)}
     </View>}>
-    {isLoading && <AppText color={colors.muted}>Loading words…</AppText>}
-    {!!error && <View style={styles.state} accessibilityRole="alert">
-      <AppText weight="semibold">Could not load this deck</AppText>
-      <AppText color={colors.muted}>{error}</AppText>
-      <Pressable accessibilityRole="button" onPress={() => void refresh()}><AppText weight="semibold" color={colors.primary}>Try again</AppText></Pressable>
+    {loading && <AppText color={colors.muted}>Đang tải bộ thẻ…</AppText>}
+    {unavailable && <View style={styles.state}>
+      <AppText accessibilityRole="alert" color={colors.error}>{learning.loadError || 'Chưa tải được bộ thẻ.'}</AppText>
+      <PrimaryButton title={learning.notFound ? 'Về Từ vựng' : 'Thử lại'}
+        onPress={learning.notFound ? backToVocabulary : () => {
+          if (error) void refresh();
+          if (learning.loadError) learning.retryLoad();
+        }} />
     </View>}
-    {!isLoading && !error && words.length === 0 && <View style={styles.state}>
-      <AppText weight="semibold">This deck has no words yet</AppText>
-      <Pressable accessibilityRole="button" disabled={isRefreshing} onPress={() => void refresh()}>
-        <AppText weight="semibold" color={colors.primary}>{isRefreshing ? 'Refreshing…' : 'Refresh'}</AppText>
+    {!loading && !unavailable && words.length === 0 && <View style={styles.state}>
+      <AppText weight="semibold">Bộ từ này chưa có thẻ</AppText>
+      <PrimaryButton title={isRefreshing ? 'Đang tải lại…' : 'Tải lại'} disabled={isRefreshing} onPress={() => void refresh()} />
+    </View>}
+    {card && <StudyFlashcard key={`${card.id}:${cardTurn}`} word={card} onSpeak={text => void speak(text)} speechFailed={speechFailed} />}
+    {learning.unsavedWordId && <View style={styles.state}>
+      <AppText accessibilityRole="alert" color={colors.error}>Chưa lưu được lượt học.</AppText>
+      <PrimaryButton title="Thử lưu lại" disabled={learning.pending}
+        onPress={() => void saveRating(learning.unsavedWordId!)} />
+    </View>}
+    {done && !loading && !unavailable && <View style={styles.completed} testID="flashcards-completed">
+      <AppText size={27} weight="bold">Đã học xong</AppText>
+      {deckTitle && <AppText color={colors.textSecondary} style={styles.center}>{deckTitle}</AppText>}
+      {deckId && words.filter(verifiedVietnamese).length >= 5 && <PrimaryButton title="Làm Quiz"
+        testID="flashcard-start-quiz"
+        onPress={() => router.push({ pathname: '/quiz', params: { deckId, deckTitle: deckTitle ?? '' } })} />}
+      <Pressable accessibilityRole="button" onPress={backToVocabulary} style={styles.back}>
+        <AppText color={colors.primary} weight="semibold">Về Từ vựng</AppText>
       </Pressable>
     </View>}
-    {word && <>
-      <ProgressBar value={(activeIndex + 1) / words.length} />
-      <Pressable accessibilityRole="button" accessibilityLabel={`${word.headword}, ${showDefinition ? 'Ẩn nghĩa' : 'Xem nghĩa'}`} onPress={() => setShowDefinition(value => !value)} style={styles.wordCard}>
-        <AppText size={39} weight="extrabold" style={styles.center}>{word.headword}</AppText>
-        {!!word.partOfSpeech && <AppText size={14} color={colors.muted}>{word.partOfSpeech}{word.cefrLevel ? ` · ${word.cefrLevel}` : ''}</AppText>}
-        {!!word.ipa && <AppText size={20} color={colors.muted}>{word.ipa}</AppText>}
-        <View style={styles.translation}>
-          <AppText size={14} weight="semibold" color={colors.primary}>
-            {showDefinition ? (word.meaningVi ? 'Nghĩa tiếng Việt' : 'English definition') : 'Definition'}
-          </AppText>
-          {showDefinition
-            ? <AppText size={15} style={styles.center}>{word.meaningVi || word.definitionEn || 'No definition is available for this word.'}</AppText>
-            : <AppText size={14} color={colors.primary}>Tap to reveal</AppText>}
-        </View>
-      </Pressable>
-      {!!word.exampleEn && <View style={styles.example}>
-        <AppText size={12} weight="semibold" color={colors.muted}>Ví dụ</AppText>
-        <AppText size={17} style={{ lineHeight: 25 }}>{word.exampleEn}</AppText>
-        {!!word.exampleVi && <AppText size={15} color={colors.muted} style={styles.exampleTranslation}>{word.exampleVi}</AppText>}
-      </View>}
-    </>}
   </Screen>;
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: 12, paddingHorizontal: 22, paddingBottom: 18, gap: 20 },
-  state: { gap: 12, paddingVertical: 18 },
-  wordCard: { padding: 22, minHeight: 230, borderRadius: 18, alignItems: 'center', justifyContent: 'center', gap: 14, backgroundColor: colors.surface },
+  content: { paddingHorizontal: 22, paddingVertical: 14, gap: 14 },
+  progress: { paddingHorizontal: 22, paddingTop: 10 },
+  state: { gap: 12, paddingVertical: 12 },
   center: { textAlign: 'center' },
-  translation: { width: '100%', alignItems: 'center', gap: 10, padding: 16, borderRadius: 14, backgroundColor: colors.lavender },
-  example: { gap: 9, paddingHorizontal: 8 },
-  exampleTranslation: { lineHeight: 22 },
-  footer: { paddingHorizontal: 22, paddingBottom: 12, backgroundColor: colors.screen },
-  actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  action: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 7 },
-  ratings: { flexDirection: 'row', gap: 8 },
-  rating: { flex: 1, minWidth: 0, minHeight: 68, paddingVertical: 10, gap: 6, borderRadius: 12, borderWidth: 1,
+  ratings: { flexDirection: 'row', gap: 8, paddingHorizontal: 22, paddingBottom: 12 },
+  rating: { flex: 1, minWidth: 0, minHeight: 90, paddingVertical: 12, gap: 9, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center' },
+  pressed: { opacity: 0.72 },
+  completed: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 17, paddingBottom: 28 },
+  back: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

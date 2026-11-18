@@ -51,7 +51,7 @@ function AppNavigator() {
   }
   const signedIn = state.status === 'signed-in';
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.screen } }}>
-    <Stack.Protected guard={!signedIn}>
+    <Stack.Protected guard={!signedIn} redirectTo="/home">
       <Stack.Screen name="index" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
@@ -60,6 +60,7 @@ function AppNavigator() {
       <Stack.Screen name="home" />
       <Stack.Screen name="vocabulary" />
       <Stack.Screen name="flashcard" />
+      <Stack.Screen name="quiz" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="change-password" />
       <Stack.Screen name="review" />

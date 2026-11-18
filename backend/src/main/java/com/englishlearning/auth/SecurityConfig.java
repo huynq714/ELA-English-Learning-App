@@ -54,6 +54,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/decks",
                                 "/api/v1/decks/{id}", "/api/v1/decks/{id}/words").permitAll()
                         .requestMatchers("/api/v1/users/me", "/api/v1/users/me/profile", "/api/v1/users/me/password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/quiz/attempts", "/api/v1/quiz/attempts/{id}/answers",
+                                "/api/v1/quiz/attempts/{id}/submit").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/quiz/attempts/{id}/result", "/api/v1/decks/{id}/study-progress").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/decks/{id}/study-progress").authenticated()
                         .requestMatchers("/api/v1/dev/**").access((authentication, context) ->
                                 new AuthorizationDecision(localProfile && LOOPBACK.contains(context.getRequest().getRemoteAddr())))
                         .anyRequest().denyAll())

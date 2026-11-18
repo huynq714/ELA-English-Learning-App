@@ -8,7 +8,8 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 - Auth và Profile: đăng ký, đăng nhập bằng email, JWT và cập nhật hồ sơ của tài khoản đang đăng nhập. Xem [kịch bản demo Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
 - Các API `/api/v1/dev/...` chỉ phục vụ Backend chạy native với profile `local` và yêu cầu đến từ loopback.
 - Profile chưa có API DELETE. Deck DELETE đặt `is_published=false`, không xóa hàng khỏi database.
-- Quiz, FSRS, IPA và AI Conversation hiện có thiết kế database, chưa có REST API hoàn chỉnh.
+- Flashcards lưu vị trí học. Quiz xếp đề, chấm điểm và lưu kết quả theo tài khoản. Xem [kịch bản Flashcards và Quiz](docs/week4-demo/WEEK4_FLASHCARDS_QUIZ_TEST.md).
+- FSRS, IPA và AI Conversation hiện có thiết kế database, chưa có REST API hoàn chỉnh.
 
 ## Yêu cầu chung
 
@@ -26,6 +27,7 @@ README này hướng dẫn thành viên trong nhóm chạy Backend và thử Dec
 3. Trong Query Tool của database mới/trống, mở và chạy [`database/week3/schema.sql`](database/week3/schema.sql). Script tạo extension `pgcrypto`, 16 bảng, FK, constraint và trigger.
 4. Không chạy lại schema trên database đã có bảng/dữ liệu; không drop database có dữ liệu cần giữ.
 5. Với database mới, chạy thêm [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) một lần để Backend xác thực schema.
+6. Với database đã có schema Week 3, áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) trước khi dùng Flashcards và Quiz. Nếu database chưa có bộ từ A1, xem [hướng dẫn import](docs/week4-demo/VOCABULARY_IMPORT_GUIDE.md).
 
 Kiểm tra:
 
@@ -80,6 +82,8 @@ docker compose up --build
 
 Docker tự build Backend, tạo PostgreSQL và nạp schema khi khởi tạo volume database lần đầu. Chờ log báo Spring Boot đã khởi động. Bộ cấu hình demo dùng database riêng trong Docker; không cần sửa `application.properties`.
 
+Với volume Docker có sẵn, mở database Docker trong pgAdmin và chạy [migration Quiz](database/week4/migrations/V1_3__quiz_question_snapshot.sql). Với volume mới, làm theo [hướng dẫn import](docs/week4-demo/VOCABULARY_IMPORT_GUIDE.md) để có dữ liệu A1.
+
 - API: `http://127.0.0.1:8080`
 - PostgreSQL từ pgAdmin: host `127.0.0.1`, port `5433`, database/user/password xem trong file `.env` vừa tạo.
 - Mật khẩu mẫu trong `.env.example` chỉ dành cho database local demo. `.env` bị Git ignore; không dùng cấu hình này cho production.
@@ -130,7 +134,7 @@ Nếu endpoint `/api/v1/dev/decks` trả `404`, kiểm tra Backend được ch�
 
 ## Thử Profile bằng Postman
 
-Profile cần `userId` của một hàng có thật trong bảng `users`. Chưa có API đăng ký User; mỗi thành viên dùng User test có sẵn hoặc tự tạo User test một lần.
+Các request Profile demo bên dưới cần `userId` của một hàng có thật trong bảng `users`. Thành viên có thể tạo tài khoản qua app hoặc dùng User test có sẵn.
 
 ### Tạo/chọn User test
 
