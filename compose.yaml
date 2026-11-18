@@ -10,6 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./database/week3/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./database/week4/migrations/V1_2__source_vocabulary_fields.sql:/docker-entrypoint-initdb.d/002-week4-vocabulary.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s

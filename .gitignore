@@ -41,6 +41,11 @@ yarn-error.*
 /backend/target/
 /English_Learning_Week3_Demo_Handover.zip
 
+# Local Vocabulary source downloads and caches
+/database/week4/import/cache/
+/database/week4/import/source/
+__pycache__/
+
 # typescript
 *.tsbuildinfo
 

@@ -4,8 +4,10 @@ import com.englishlearning.common.exception.GlobalExceptionHandler;
 import com.englishlearning.vocabulary.controller.DeckController;
 import com.englishlearning.vocabulary.controller.DeckDevController;
 import com.englishlearning.vocabulary.dto.DeckResponse;
+import com.englishlearning.vocabulary.dto.DeckWordResponse;
 import com.englishlearning.vocabulary.service.DeckNotFoundException;
 import com.englishlearning.vocabulary.service.DeckService;
+import com.englishlearning.vocabulary.service.DeckWordsService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +41,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 class DeckControllerTest {
 
     private final DeckService deckService = mock(DeckService.class);
+    private final DeckWordsService deckWordsService = mock(DeckWordsService.class);
     private MockMvc mockMvc;
     private UUID deckId;
 
@@ -46,7 +50,7 @@ class DeckControllerTest {
         deckId = UUID.fromString("11111111-1111-4111-8111-111111111111");
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
-        mockMvc = standaloneSetup(new DeckController(deckService), new DeckDevController(deckService))
+        mockMvc = standaloneSetup(new DeckController(deckService, deckWordsService), new DeckDevController(deckService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setValidator(validator)
                 .build();
@@ -67,6 +71,32 @@ class DeckControllerTest {
         when(deckService.getPublished(deckId)).thenThrow(new DeckNotFoundException(deckId));
 
         mockMvc.perform(get("/api/v1/decks/{id}", deckId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+    @Test
+    void listsWordsForPublishedDeckAsSourceAttributedDtos() throws Exception {
+        when(deckWordsService.listPublishedDeckWords(deckId)).thenReturn(List.of(new DeckWordResponse(
+                UUID.fromString("33333333-3333-4333-8333-333333333333"), "journey", "noun", "A1",
+                "The act of travelling from one place to another.", null, "/ˈdʒɜːni/",
+                "It was a long journey.", "Đó là một hành trình dài.", null,
+                Map.of("cefrj", Map.of("version", "1.6")))));
+
+        mockMvc.perform(get("/api/v1/decks/{id}/words", deckId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].headword").value("journey"))
+                .andExpect(jsonPath("$[0].definitionEn").exists())
+                .andExpect(jsonPath("$[0].meaningVi").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$[0].exampleVi").value("Đó là một hành trình dài."))
+                .andExpect(jsonPath("$[0].sourceMetadata.cefrj.version").value("1.6"));
+    }
+
+    @Test
+    void missingOrHiddenDeckWordsReturn404() throws Exception {
+        when(deckWordsService.listPublishedDeckWords(deckId)).thenThrow(new DeckNotFoundException(deckId));
+
+        mockMvc.perform(get("/api/v1/decks/{id}/words", deckId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }

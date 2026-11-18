@@ -12,11 +12,10 @@ import { colors } from '@/theme/tokens';
 const assets = figmaAssets.vocabulary;
 
 function DeckCard({ deck, purple }: { deck: Deck; purple: boolean }) {
-  const notice = useDemoNotice();
   const detail = [deck.level ? `Trình độ ${deck.level}` : null, deck.description]
     .filter(Boolean).join(' · ') || 'Bộ từ vựng';
   return <Pressable accessibilityRole="button" accessibilityLabel={`${deck.title}, ${detail}`}
-    onPress={() => deck.title === 'Travel' ? router.push('/flashcard') : notice(`Bộ từ ${deck.title}`)} style={styles.deck}>
+    onPress={() => router.push(`/flashcard?deckId=${encodeURIComponent(deck.id)}&deckTitle=${encodeURIComponent(deck.title)}`)} style={styles.deck}>
     <Asset source={purple ? assets.folderIllustration1 : assets.folderIllustration} width={49} height={43} />
     <View style={styles.deckText}>
       <AppText size={18} weight="bold" numberOfLines={1}>{deck.title}</AppText>
