@@ -17,6 +17,7 @@ services:
       - ./database/week4/migrations/V1_5__password_reset.sql:/docker-entrypoint-initdb.d/006-password-reset.sql:ro
       - ./database/week4/import/data/apply_pronunciations.sql:/docker-entrypoint-initdb.d/007-pronunciations.sql:ro
       - ./database/week4/import/data/apply_topic_examples.sql:/docker-entrypoint-initdb.d/008-topic-examples.sql:ro
+      - ./database/week5/migrations/V1_6__user_saved_words.sql:/docker-entrypoint-initdb.d/009-my-vocabulary.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s

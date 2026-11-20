@@ -2,7 +2,7 @@ param(
     [string]$PostgresBin = 'C:\Program Files\PostgreSQL\18\bin',
     [int]$DatabasePort = 55436,
     [int]$ApiPort = 58125,
-    [ValidateSet('Auth', 'Quiz', 'PasswordReset')]
+    [ValidateSet('Auth', 'Quiz', 'PasswordReset', 'MyVocabulary')]
     [string]$Suite = 'Auth',
     [switch]$Web,
     [int]$WebPort = 58126,
@@ -75,7 +75,8 @@ try {
         -f database/week4/import/data/apply_a1_import.sql `
         -f database/week4/migrations/V1_4__topic_deck_catalog.sql `
         -f database/week4/import/data/apply_topic_decks.sql `
-        -f database/week4/migrations/V1_5__password_reset.sql
+        -f database/week4/migrations/V1_5__password_reset.sql `
+        -f database/week5/migrations/V1_6__user_saved_words.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $snapshotSql = 'SELECT md5(string_agg(to_jsonb(w)::text, '''' ORDER BY w.id)) FROM words w;'
@@ -151,28 +152,34 @@ FROM scope GROUP BY catalogue ORDER BY catalogue;
         return
     }
     Start-SmokeBackend 'spring'
-    if ($Suite -eq 'Quiz') {
+    if ($Suite -eq 'Quiz' -or $Suite -eq 'MyVocabulary') {
         $env:QUIZ_SMOKE_PSQL = "$PostgresBin\psql.exe"
         $env:QUIZ_SMOKE_DB_PORT = [string]$DatabasePort
         $env:QUIZ_SMOKE_STATE = Join-Path $isolated 'quiz-state.json'
         $env:QUIZ_SMOKE_PASSWORD = 'Quiz7' + [Guid]::NewGuid().ToString('N')
-        python backend/scripts/test_quiz.py before-restart
-        if ($LASTEXITCODE) { throw "Quiz HTTP/SQL checks failed. See $isolated" }
-        Stop-Process -InputObject $api
-        if (-not $api.WaitForExit(10000)) { throw 'The first isolated Backend process did not exit' }
-        Start-SmokeBackend 'spring-restarted'
-        python backend/scripts/test_quiz.py after-restart
-        if ($LASTEXITCODE) { throw "Restart checks failed. See $isolated" }
+        if ($Suite -eq 'MyVocabulary') {
+            python backend/scripts/test_my_vocabulary.py
+            if ($LASTEXITCODE) { throw "My Vocabulary HTTP/SQL checks failed. See $isolated" }
+        } else {
+            python backend/scripts/test_quiz.py before-restart
+            if ($LASTEXITCODE) { throw "Quiz HTTP/SQL checks failed. See $isolated" }
+            Stop-Process -InputObject $api
+            if (-not $api.WaitForExit(10000)) { throw 'The first isolated Backend process did not exit' }
+            Start-SmokeBackend 'spring-restarted'
+            python backend/scripts/test_quiz.py after-restart
+            if ($LASTEXITCODE) { throw "Restart checks failed. See $isolated" }
+        }
         if ($Web) {
             $env:EXPO_PUBLIC_API_BASE_URL = "http://127.0.0.1:$WebPort"
             $env:EXPO_OFFLINE = '1'
             $env:CI = '1'
             $env:QUIZ_WEB_PORT = "$WebPort"
             $metro = Start-Process -FilePath 'node.exe' -ArgumentList @('node_modules/expo/bin/cli', 'start', '--localhost', '--port', "$WebPort", '--max-workers', '2') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $isolated 'expo.log') -RedirectStandardError (Join-Path $isolated 'expo-error.log')
-            node backend/scripts/test-quiz-web.cjs
-            if ($LASTEXITCODE) { throw "Quiz web E2E failed. See $isolated" }
+            $webScenario = if ($Suite -eq 'MyVocabulary') { 'test-my-vocabulary-web.cjs' } else { 'test-quiz-web.cjs' }
+            node "backend/scripts/$webScenario"
+            if ($LASTEXITCODE) { throw "$Suite web E2E failed. See $isolated" }
         }
-        "Quiz evidence directory: $isolated"
+        "$Suite evidence directory: $isolated"
         return
     }
     python backend/scripts/test_auth_profile.py

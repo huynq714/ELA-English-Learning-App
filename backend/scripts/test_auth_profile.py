@@ -45,7 +45,8 @@ def expect(label, method, path, expected, *, payload=None, access=None):
         response = error
     with response:
         assert response.status == expected, f"{label}: expected {expected}, got {response.status}"
-        data = json.load(response)
+        body = response.read()
+        data = json.loads(body) if body else None
     print(f"PASS {label} (HTTP {expected})")
     return data
 

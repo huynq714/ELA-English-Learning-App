@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -9,8 +9,8 @@ import type { useFlashcardAudio } from '../hooks/use-flashcard-audio';
 import { verifiedVietnamese, type Word } from '../models/word';
 import { dictionaryRecording } from '../models/word-provenance';
 
-export function StudyFlashcard({ word, audio }: {
-  word: Word; audio: ReturnType<typeof useFlashcardAudio>;
+export function StudyFlashcard({ word, audio, bookmark }: {
+  word: Word; audio: ReturnType<typeof useFlashcardAudio>; bookmark?: ReactNode;
 }) {
   const [revealed, setRevealed] = useState(false);
   const [turning, setTurning] = useState(false);
@@ -56,6 +56,7 @@ export function StudyFlashcard({ word, audio }: {
         inputRange: [-90, 90], outputRange: ['-90deg', '90deg'],
       }) }] },
     ]} testID="flashcard-surface">
+      {bookmark && <View style={styles.bookmark}>{bookmark}</View>}
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: revealed, disabled: turning }}
         accessibilityLabel={revealed ? `${word.headword}. ${meaning}` : word.headword}
         accessibilityHint={revealed ? 'Chạm để xem mặt trước' : 'Chạm để xem nghĩa'}
@@ -82,13 +83,13 @@ export function StudyFlashcard({ word, audio }: {
       </View>
     </Animated.View>
     {example && <View style={styles.example}>
-      <AppText size={19} style={styles.exampleText}>{example}</AppText>
-      {revealed && word.exampleVi && <AppText color={colors.textSecondary}>{word.exampleVi}</AppText>}
-      <View style={styles.exampleAudio}>
+      <View style={styles.exampleRow}>
+        <AppText size={19} style={styles.exampleText}>{example}</AppText>
         <AudioButton label="Nghe câu ví dụ" detail="Giọng máy"
           loading={audio.playback?.phase === 'loading' && audio.playback.target === 'example'}
           onPress={() => void audio.play('example', { text: example })} />
       </View>
+      {revealed && word.exampleVi && <AppText color={colors.textSecondary}>{word.exampleVi}</AppText>}
     </View>}
     {audio.playback?.phase === 'error' && <AppText accessibilityRole="alert" color={colors.textSecondary}>
       {audio.playback.target === 'word' && recording
@@ -120,10 +121,11 @@ const styles = StyleSheet.create({
     gap: 12, justifyContent: 'center', alignItems: 'center' },
   center: { textAlign: 'center' },
   hint: { marginTop: 12, textAlign: 'center' },
-  wordAudio: { position: 'absolute', top: 8, right: 10 },
+  bookmark: { position: 'absolute', top: 8, left: 10, zIndex: 2 },
+  wordAudio: { position: 'absolute', top: 8, right: 10, zIndex: 2 },
   audio: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.lavender },
   pressed: { opacity: 0.72 },
   example: { gap: 10, paddingHorizontal: 10 },
-  exampleText: { lineHeight: 28 },
-  exampleAudio: { alignItems: 'flex-end' },
+  exampleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  exampleText: { lineHeight: 28, flex: 1 },
 });

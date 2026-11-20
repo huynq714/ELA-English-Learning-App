@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomNavigation } from '@/components/bottom-navigation';
-import { useDemoNotice } from '@/components/demo-notice';
 import { AppHeader, AppText, AppTextInput, Asset, Screen, SegmentedControl } from '@/components/ui';
 import { VocabularySources } from '@/features/vocabulary/components/vocabulary-sources';
 import type { Deck } from '@/features/vocabulary/models/deck';
@@ -28,7 +27,6 @@ function DeckCard({ deck }: { deck: Deck }) {
 }
 
 export default function VocabularyScreen() {
-  const notice = useDemoNotice();
   const {
     decks, topics, isLoading, isRefreshing, error, refresh, hasCatalogue, needsProfileLevel,
     search, setSearch, tab, setTab, selectedTopic, setTopicKey,
@@ -47,6 +45,14 @@ export default function VocabularyScreen() {
     <AppTextInput accessibilityLabel="Tìm theo tên bộ từ hoặc chủ đề" placeholder="Tìm theo tên bộ từ hoặc chủ đề"
       value={search} onChangeText={setSearch} autoCapitalize="none"
       icon={<Asset source={assets.search} width={19} />} style={styles.search} inputStyle={{ fontSize: 13 }} />
+    <Pressable accessibilityRole="button" accessibilityLabel="Bộ từ vựng của tôi"
+      onPress={() => router.push('/my-vocabulary')} style={styles.saved}>
+      <View style={{ flex: 1, gap: 4 }}>
+        <AppText weight="semibold" color={colors.primary}>Bộ từ vựng của tôi</AppText>
+        <AppText size={12} color={colors.muted}>Lưu và quản lý bộ từ của riêng bạn</AppText>
+      </View>
+      <Asset source={assets.chevronRight} width={18} />
+    </Pressable>
     <SegmentedControl labels={['Tất cả', 'Chủ đề']} selected={tab} onPress={setTab} />
     {tab === 1 && topics.length > 0 && <View style={styles.topics}>
       {[{ key: null, label: 'Tất cả chủ đề' }, ...topics].map(topic => {
@@ -81,16 +87,13 @@ export default function VocabularyScreen() {
     {decks.length > 0 && <View style={styles.list}>
       {decks.map(deck => <DeckCard key={deck.id} deck={deck} />)}
     </View>}
-    <View style={styles.addRow}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Thêm bộ từ" onPress={() => notice('Tạo bộ từ')} style={styles.add}>
-        <Asset source={assets.plus} width={27} />
-      </Pressable>
-    </View>
   </Screen>;
 }
 
 const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  saved: { minHeight: 66, paddingHorizontal: 14, paddingVertical: 10, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'space-between', borderRadius: 14, backgroundColor: colors.lavender },
   content: { paddingTop: 12, paddingHorizontal: 22, paddingBottom: 20, gap: 20 },
   search: { minHeight: 48, padding: 13, gap: 10, borderRadius: 12 },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -102,6 +105,4 @@ const styles = StyleSheet.create({
   deck: { minHeight: 87, paddingHorizontal: 8, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 15,
     borderBottomWidth: 1, borderBottomColor: colors.screenBorder },
   deckText: { flex: 1, minWidth: 0, gap: 7 },
-  addRow: { alignItems: 'flex-end' },
-  add: { width: 54, height: 54, borderRadius: 100, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
 });

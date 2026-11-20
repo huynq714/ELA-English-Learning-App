@@ -4,12 +4,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Asset, PrimaryButton, ProgressBar, Screen } from '@/components/ui';
 import { StudyFlashcard } from '@/features/vocabulary/components/study-flashcard';
-import { VocabularySources } from '@/features/vocabulary/components/vocabulary-sources';
+import { BookmarkWord } from '@/features/vocabulary/components/bookmark-word';
+import { FlashcardSources } from '@/features/vocabulary/components/flashcard-sources';
 import { useDeckWordsViewModel } from '@/features/vocabulary/hooks/use-deck-words-view-model';
 import { useFlashcardAudio } from '@/features/vocabulary/hooks/use-flashcard-audio';
 import { useStudyProgress } from '@/features/vocabulary/hooks/use-study-progress';
 import { verifiedVietnamese } from '@/features/vocabulary/models/word';
-import { dictionaryRecording, wordAttributions } from '@/features/vocabulary/models/word-provenance';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
@@ -73,13 +73,15 @@ export default function FlashcardScreen() {
 
   return <Screen testID="screen-flashcard" contentStyle={styles.content}
     header={(card || done) && <View style={styles.header}>
-      <View style={styles.progress}>
-        <ProgressBar value={done ? 1 : (words.length - remaining.length + 1) / words.length} />
+      <View style={styles.progressBlock}>
+        {card && <AppText size={12} weight="semibold" color={colors.muted}>
+          {words.length - remaining.length + 1}/{words.length}
+        </AppText>}
+        <View style={styles.progress}>
+          <ProgressBar value={done ? 1 : (words.length - remaining.length + 1) / words.length} />
+        </View>
+        {card && <FlashcardSources key={cardKey} word={card} />}
       </View>
-      {card && <VocabularySources key={cardKey} entries={wordAttributions(card)}
-        playbackNote={dictionaryRecording(card)
-          ? (card.exampleEn ? 'Câu ví dụ dùng giọng máy.' : undefined)
-          : (card.exampleEn ? 'Từ và câu ví dụ dùng giọng máy.' : 'Từ này dùng giọng máy.')} />}
     </View>}
     footer={card && <View style={styles.ratings}>
       {ratings.map(({ label, icon, background, color }) => <Pressable key={label} accessibilityRole="button"
@@ -102,7 +104,9 @@ export default function FlashcardScreen() {
       <AppText weight="semibold">Bộ từ này chưa có thẻ</AppText>
       <PrimaryButton title={isRefreshing ? 'Đang tải lại…' : 'Tải lại'} disabled={isRefreshing} onPress={() => void refresh()} />
     </View>}
-    {card && <StudyFlashcard key={cardKey} word={card} audio={audio} />}
+    {card && <View key={cardKey} style={styles.study}>
+      <StudyFlashcard word={card} audio={audio} bookmark={<BookmarkWord wordId={card.id} />} />
+    </View>}
     {learning.unsavedWordId && <View style={styles.state}>
       <AppText accessibilityRole="alert" color={colors.error}>Chưa lưu được lượt học.</AppText>
       <PrimaryButton title="Thử lưu lại" disabled={learning.pending}
@@ -123,8 +127,10 @@ export default function FlashcardScreen() {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 22, paddingVertical: 14, gap: 14 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingLeft: 22, paddingRight: 12, gap: 8 },
-  progress: { flex: 1, minHeight: 16, justifyContent: 'center' },
+  header: { paddingHorizontal: 8 },
+  progressBlock: { alignItems: 'flex-end', gap: 2 },
+  progress: { width: '100%', minHeight: 16, justifyContent: 'center' },
+  study: { flexGrow: 1, justifyContent: 'center' },
   state: { gap: 12, paddingVertical: 12 },
   center: { textAlign: 'center' },
   ratings: { flexDirection: 'row', gap: 8, paddingHorizontal: 22, paddingBottom: 12 },

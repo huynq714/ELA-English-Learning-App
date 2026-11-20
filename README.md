@@ -12,6 +12,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 - Các API `/api/v1/dev/...` chỉ phục vụ Backend chạy native với profile `local` và yêu cầu đến từ loopback.
 - Profile chưa có API DELETE. Deck DELETE đặt `is_published=false`, không xóa hàng khỏi database.
 - Flashcards lưu vị trí học. Quiz xếp đề, chấm điểm và lưu kết quả theo tài khoản. Xem [kịch bản Flashcards và Quiz](docs/week4-demo/WEEK4_FLASHCARDS_QUIZ_TEST.md).
+- Bộ từ vựng của tôi lưu từ theo tài khoản và có chế độ ôn bằng Flashcards. Xem [hướng dẫn cài đặt và demo My Vocabulary](docs/week5-demo/MY_VOCABULARY.md).
 - FSRS, IPA và AI Conversation hiện có thiết kế database, chưa có REST API hoàn chỉnh.
 
 ## Yêu cầu chung
@@ -35,6 +36,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 8. Áp dụng [migration khôi phục mật khẩu](database/week4/migrations/V1_5__password_reset.sql) để dùng Gmail OTP.
 9. Áp dụng [bản cập nhật nguồn và phát âm](docs/week4-demo/WEEK4_VOCABULARY_SOURCES.md) sau khi đã nạp từ vựng.
 10. Chạy [bản cập nhật câu ví dụ Anh–Việt](database/week4/import/data/apply_topic_examples.sql) sau khi nạp sáu bộ A1/A2. Docker tự chạy bước này khi tạo volume mới.
+11. Áp dụng [migration My Vocabulary](database/week5/migrations/V1_6__user_saved_words.sql). Database đang dùng chỉ cần chạy những migration còn thiếu.
 
 Kiểm tra:
 
@@ -45,7 +47,7 @@ SELECT count(*) AS tables FROM information_schema.tables
 WHERE table_schema='public' AND table_type='BASE TABLE';
 ```
 
-Kết quả mong đợi là `english_learning_db`, `UTF8` và 18 bảng sau migration khôi phục mật khẩu (16 bảng gốc và 2 bảng mới).
+Kết quả mong đợi là `english_learning_db`, `UTF8` và 19 bảng sau các migration (16 bảng gốc, 2 bảng khôi phục mật khẩu và 1 bảng lưu từ).
 
 ### A2. Chạy Backend
 

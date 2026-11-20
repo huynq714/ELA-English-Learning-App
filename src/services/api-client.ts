@@ -13,7 +13,7 @@ function getBaseUrl(): string {
   return baseUrl;
 }
 
-async function request<T>(method: 'GET' | 'POST' | 'PATCH', path: string, body?: unknown, token?: string): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown, token?: string): Promise<T> {
   const url = `${getBaseUrl()}${path}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -66,4 +66,5 @@ export const apiClient = {
   get: <T>(path: string, token?: string) => request<T>('GET', path, undefined, token),
   post: <T>(path: string, body: unknown, token?: string) => request<T>('POST', path, body, token),
   patch: <T>(path: string, body: unknown, token: string) => request<T>('PATCH', path, body, token),
+  delete: <T>(path: string, token: string) => request<T>('DELETE', path, undefined, token),
 };

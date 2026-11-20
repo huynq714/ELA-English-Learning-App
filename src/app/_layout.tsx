@@ -60,6 +60,9 @@ function AppNavigator() {
     <Stack.Protected guard={signedIn}>
       <Stack.Screen name="home" />
       <Stack.Screen name="vocabulary" />
+      <Stack.Screen name="my-vocabulary" />
+      <Stack.Screen name="my-vocabulary/[groupId]" />
+      <Stack.Screen name="saved-flashcards" />
       <Stack.Screen name="flashcard" />
       <Stack.Screen name="quiz" />
       <Stack.Screen name="profile" />
