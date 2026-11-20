@@ -42,9 +42,11 @@ ORDER BY d.level, d.topic;
 
 Kết quả mong đợi gồm 3 dòng A1 và 3 dòng A2. Mỗi dòng có `words = verified_words = 15` và thứ tự 1–15. Catalog dùng `topic_key` định danh Deck và `import_key` định danh từ. Các Deck cũ nằm ngoài danh mục nhưng các hàng, liên kết và lịch sử của chúng vẫn được lưu.
 
+Database mới từ import chủ đề có 90 từ và 90 liên kết Deck–Word. Không cần nạp ba Deck A1 Core cũ để chạy catalog hiện tại; database đã có chúng vẫn giữ nguyên, không bị xóa. User, bookmark và tiến độ học không được chia sẻ giữa các thành viên.
+
 ### Cập nhật volume Docker đã có dữ liệu
 
-Docker chạy SQL khởi tạo khi volume trống. Nếu volume cũ đã có V1_2 và V1_3, chạy từ PowerShell ở thư mục gốc để sao lưu rồi áp dụng V1_4 và danh mục. Đổi username hoặc tên database trong đoạn lệnh nếu bạn đã tùy chỉnh chúng trong `.env`. Nếu thiếu V1_2 hoặc V1_3, dùng bản sao lưu rồi áp dụng các migration còn thiếu theo thứ tự trước V1_4. [Tài liệu image PostgreSQL](https://github.com/docker-library/docs/blob/master/postgres/README.md)
+Docker chỉ chạy SQL khởi tạo khi volume trống. Khi cập nhật volume cũ, lệnh dưới đây sao lưu rồi áp dụng V1_4 và import idempotent cho sáu Deck chủ đề. Chạy lại không xóa Deck, Word, liên kết hay lịch sử hiện có. Đổi username hoặc tên database trong đoạn lệnh nếu bạn đã tùy chỉnh chúng trong `.env`. Nếu thiếu V1_2 hoặc V1_3, dùng bản sao lưu và áp dụng các migration còn thiếu theo thứ tự trước khi chạy import. [Tài liệu image PostgreSQL](https://github.com/docker-library/docs/blob/master/postgres/README.md)
 
 ```powershell
 docker compose up -d --wait db
@@ -98,8 +100,8 @@ docker compose up -d --build backend
 | Hồi quy Auth và Profile | PASS qua HTTP và PostgreSQL cô lập, gồm cập nhật Profile, đổi mật khẩu và đọc danh mục sau đăng ký. |
 | Tìm kiếm kết hợp chủ đề, lật thẻ, đổi Profile A1 → A2 trong cùng phiên | PASS trên React Native Web với Edge và API thật |
 | Maven, import builder, TypeScript, ESLint, Expo web export | PASS với 23 test Maven và 5 test import builder |
-| Docker Compose với volume mới | PASS. PostgreSQL tự nạp 6 Deck, 90 từ và 90 liên kết. Backend trả `UP`, các tài khoản A1/A2 mới đăng ký mỗi tài khoản nhận đúng 3 Deck của mình. |
-| Cập nhật volume Docker cũ | PASS trên volume kiểm thử tạo từ cấu hình V1_3. Sao lưu thành công, dry-run rollback và lần nạp thật giữ nguyên Deck thử nghiệm cũ. |
+| Docker Compose với volume mới | Cấu hình hiện tại nạp 6 Deck chủ đề, migrations và dữ liệu nguồn. Chưa chạy lại Docker Engine sau lần cập nhật cấu hình này. |
+| Cập nhật volume Docker cũ | Quy trình trước đây đã PASS trên volume kiểm thử V1_3. Lượt cập nhật này không thêm hoặc xóa Deck Core; chưa chạy lại trên Docker Engine. |
 | Nạp database phát triển `english_learning_db` | PASS theo log PowerShell người dùng gửi. Script tạo bản sao lưu, dry-run kết thúc bằng `ROLLBACK` và lần nạp kết thúc bằng `COMMIT`. Đã thêm 6 Deck, 72 từ mới và 90 liên kết. Cả 6 Deck có 15 từ đã xác minh. |
 | Expo Go trên điện thoại | Chưa chạy trong lượt này |
 

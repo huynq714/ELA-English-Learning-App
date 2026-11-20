@@ -1,8 +1,8 @@
 # English Learning App
 
-README này hướng dẫn thành viên trong nhóm chạy Backend và thử Deck/Profile trên Windows. Chọn **một** cách chạy PostgreSQL bên dưới: cài PostgreSQL trực tiếp hoặc dùng Docker. Hai cách đều chạy cùng schema và cùng API.
+README này hướng dẫn thành viên trong nhóm chạy Backend và thử Deck/Profile trên Windows. Chọn **một** cách chạy PostgreSQL bên dưới: cài PostgreSQL trực tiếp hoặc dùng Docker. Hai cách đều chạy cùng schema, migrations và bộ dữ liệu học liệu được lưu trong Git.
 
-Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư mục dự án. Thành viên mới có thể dùng [Docker Compose](#chọn-b--docker-compose) để tự tạo PostgreSQL và nạp sẵn **3 Deck A1 và 3 Deck A2, mỗi Deck 15 từ**. Mỗi bạn đăng ký tài khoản test trên database của mình sau khi khởi động.
+Thành viên đã clone repo cập nhật mã nguồn bằng `git pull --ff-only origin master`. Thành viên mới có thể dùng [Docker Compose](#chọn-b--docker-compose) để tự tạo database với **6 Deck chủ đề (15 từ mỗi Deck), 90 từ và 90 liên kết Deck–Word**. Tài khoản, Bookmark và tiến độ học vẫn riêng trên database của mỗi thành viên; mỗi bạn đăng ký tài khoản của mình sau khi khởi động.
 
 ## Backend hiện có
 
@@ -30,12 +30,12 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 2. Tạo database `english_learning_db`, encoding UTF8, nếu database chưa có.
 3. Trong Query Tool của database mới/trống, mở và chạy [`database/week3/schema.sql`](database/week3/schema.sql). Script tạo extension `pgcrypto`, 16 bảng, FK, constraint và trigger.
 4. Không chạy lại schema trên database đã có bảng/dữ liệu; không drop database có dữ liệu cần giữ.
-5. Với database mới, chạy thêm [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) một lần để Backend xác thực schema.
-6. Áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) nếu database chưa có cột `quiz_attempts.question_snapshot`.
-7. Chạy [lệnh sao lưu và nạp danh mục A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend.
+5. Chạy [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) để thêm provenance và metadata cho từ.
+6. Áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) để lưu snapshot câu hỏi.
+7. Chạy [lệnh sao lưu và nạp sáu Deck chủ đề A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend. Import này tạo 90 từ và 90 liên kết Deck–Word; không cần nạp ba Deck A1 Core cũ.
 8. Áp dụng [migration khôi phục mật khẩu](database/week4/migrations/V1_5__password_reset.sql) để dùng Gmail OTP.
 9. Áp dụng [bản cập nhật nguồn và phát âm](docs/week4-demo/WEEK4_VOCABULARY_SOURCES.md) sau khi đã nạp từ vựng.
-10. Chạy [bản cập nhật câu ví dụ Anh–Việt](database/week4/import/data/apply_topic_examples.sql) sau khi nạp sáu bộ A1/A2. Docker tự chạy bước này khi tạo volume mới.
+10. Chạy [bản cập nhật câu ví dụ Anh–Việt](database/week4/import/data/apply_topic_examples.sql) sau khi nạp sáu bộ chủ đề.
 11. Áp dụng [migration My Vocabulary](database/week5/migrations/V1_6__user_saved_words.sql). Database đang dùng chỉ cần chạy những migration còn thiếu.
 
 Kiểm tra:
@@ -98,7 +98,7 @@ docker compose logs -f backend
 
 Docker tự build Backend, tạo PostgreSQL và nạp schema khi khởi tạo volume database lần đầu. Chờ log báo Spring Boot đã khởi động. Bộ cấu hình demo dùng database riêng trong Docker; không cần sửa `application.properties`.
 
-Volume Docker mới tự nạp sáu Deck khi khởi tạo. Với volume có sẵn từ phiên bản cũ, xem [cập nhật volume giữ dữ liệu](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#cập-nhật-volume-docker-đã-có-dữ-liệu).
+Volume Docker mới tự nạp toàn bộ schema/migrations và sáu Deck chủ đề. Với volume có sẵn từ phiên bản cũ, xem [cập nhật volume giữ dữ liệu](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#cập-nhật-volume-docker-đã-có-dữ-liệu) và hướng dẫn [My Vocabulary](docs/week5-demo/MY_VOCABULARY.md#cập-nhật-postgresql). Không xóa volume để đồng bộ migration.
 
 - API: `http://127.0.0.1:8080`
 - PostgreSQL từ pgAdmin: host `127.0.0.1`, port `5433`, database/user/password xem trong file `.env` vừa tạo.
