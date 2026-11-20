@@ -48,9 +48,13 @@ export function useFlashcardAudio(cardKey: string) {
     try {
       await stopping;
       if (!isCurrent()) return;
+      // Use the same playback session for recordings and iOS text-to-speech.
+      await setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false });
+      if (!isCurrent()) return;
       if ('text' in source) {
         Speech.speak(source.text, {
           language: 'en-US',
+          useApplicationAudioSession: true,
           onStart: () => update('playing'),
           onDone: () => update(null),
           onStopped: () => update(null),
@@ -59,8 +63,6 @@ export function useFlashcardAudio(cardKey: string) {
         return;
       }
 
-      await setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false });
-      if (!isCurrent()) return;
       const player = createAudioPlayer({ uri: source.url });
       let timer: ReturnType<typeof setTimeout> | undefined;
       const watchLoading = () => {

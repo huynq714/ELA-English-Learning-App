@@ -11,7 +11,7 @@ export type UserProfile = {
   updatedAt: string;
 };
 
-type ProfileChanges = { displayName: string; englishLevel: EnglishLevel; dailyGoalMinutes: number; avatarUrl?: string };
+type ProfileChanges = { displayName: string; englishLevel: EnglishLevel; avatarUrl?: string };
 
 const path = '/api/v1/users/me/profile';
 export const profileRepository = {

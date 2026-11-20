@@ -34,6 +34,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 7. Chạy [lệnh sao lưu và nạp danh mục A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend.
 8. Áp dụng [migration khôi phục mật khẩu](database/week4/migrations/V1_5__password_reset.sql) để dùng Gmail OTP.
 9. Áp dụng [bản cập nhật nguồn và phát âm](docs/week4-demo/WEEK4_VOCABULARY_SOURCES.md) sau khi đã nạp từ vựng.
+10. Chạy [bản cập nhật câu ví dụ Anh–Việt](database/week4/import/data/apply_topic_examples.sql) sau khi nạp sáu bộ A1/A2. Docker tự chạy bước này khi tạo volume mới.
 
 Kiểm tra:
 

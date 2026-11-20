@@ -88,6 +88,13 @@ export function wordAttributions(word: Word): Attribution[] {
   if (word.ipa && phonetic.text === word.ipa && phoneticUrl) {
     result.push({ role: 'Phiên âm IPA', name: dictionaryName(phoneticUrl), url: phoneticUrl });
   }
+  const examples = record(metadata.examples);
+  if (word.exampleEn && examples.english === 'English Learning App (original example)') {
+    result.push({ role: 'Câu ví dụ', name: 'English Learning App', description: 'Câu ví dụ do ứng dụng biên soạn.' });
+  } else if (word.exampleEn && examples.english === dictionary) {
+    const exampleUrl = sourceUrl(examples.englishUrl, ['api.dictionaryapi.dev']);
+    if (exampleUrl) result.push({ role: 'Câu ví dụ', name: dictionary, url: exampleUrl });
+  }
   const audio = dictionaryRecording(word);
   if (audio) {
     result.push({ role: 'Bản ghi phát âm', name: audio.accent ? `${dictionary} (${audio.accent})` : dictionary,

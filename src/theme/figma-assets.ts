@@ -29,7 +29,6 @@ export const figmaAssets = {
     search: require('../../assets/figma/vocabulary-search.svg'),
     folderIllustration: require('../../assets/figma/vocabulary-folder-illustration.svg'),
     chevronRight: require('../../assets/figma/vocabulary-chevron-right.svg'),
-    folderIllustration1: require('../../assets/figma/vocabulary-folder-illustration1.svg'),
     plus: require('../../assets/figma/vocabulary-plus.svg'),
     house: require('../../assets/figma/vocabulary-house.svg'),
     bookOpen: require('../../assets/figma/vocabulary-book-open.svg'),

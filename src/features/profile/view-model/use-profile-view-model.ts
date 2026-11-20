@@ -12,7 +12,6 @@ export function useProfileViewModel() {
   const [savedAvatar, setSavedAvatar] = useState<string | null>(null);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [level, setLevel] = useState<EnglishLevel>('A1');
-  const [goal, setGoal] = useState('15');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [empty, setEmpty] = useState(false);
@@ -30,7 +29,6 @@ export function useProfileViewModel() {
         setDisplayName(loaded.displayName);
         setSavedAvatar(loaded.avatarUrl);
         setLevel(loaded.englishLevel);
-        setGoal(String(loaded.dailyGoalMinutes));
         setEmpty(false);
       } catch (error) {
         if (!active) return;
@@ -77,17 +75,12 @@ export function useProfileViewModel() {
       setActionError('Tên hiển thị cần từ 1 đến 100 ký tự.');
       return false;
     }
-    const goalValue = Number(goal.trim());
-    if (!/^\d{1,3}$/.test(goal.trim()) || goalValue < 5 || goalValue > 240) {
-      setActionError('Mục tiêu cần từ 5 đến 240 phút mỗi ngày.');
-      return false;
-    }
     actionInProgress.current = true;
     setBusy('save');
     setActionError(null);
     try {
       const saved = await authenticated(token => profileRepository.save(token, {
-        displayName: name, englishLevel: level, dailyGoalMinutes: goalValue,
+        displayName: name, englishLevel: level,
         ...(selectedAvatar ? { avatarUrl: selectedAvatar } : {}),
       }));
       setDisplayName(saved.displayName);
@@ -95,7 +88,6 @@ export function useProfileViewModel() {
       setSavedAvatar(saved.avatarUrl);
       setSelectedAvatar(null);
       setLevel(saved.englishLevel);
-      setGoal(String(saved.dailyGoalMinutes));
       setEmpty(false);
       return true;
     } catch {
@@ -123,6 +115,6 @@ export function useProfileViewModel() {
 
   return {
     displayName, setDisplayName, avatar: selectedAvatar ?? savedAvatar, selectAvatar,
-    level, setLevel, goal, setGoal, loading, loadError, retry, empty, actionError, busy, save, signOut,
+    level, setLevel, loading, loadError, retry, empty, actionError, busy, save, signOut,
   };
 }

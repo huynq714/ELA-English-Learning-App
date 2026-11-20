@@ -79,6 +79,27 @@ try {
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $snapshotSql = 'SELECT md5(string_agg(to_jsonb(w)::text, '''' ORDER BY w.id)) FROM words w;'
+    $exampleSql = @'
+SELECT d.topic_key || '|' || count(*) || '|' || count(*) FILTER (
+    WHERE NULLIF(btrim(w.example_en), '') IS NOT NULL AND NULLIF(btrim(w.example_vi), '') IS NOT NULL
+)
+FROM decks d JOIN deck_words dw ON dw.deck_id = d.id JOIN words w ON w.id = dw.word_id
+WHERE d.topic_key IS NOT NULL
+GROUP BY d.topic_key ORDER BY d.topic_key;
+'@
+    & "$PostgresBin\psql.exe" @client -f database/week4/import/data/apply_topic_examples.sql
+    if ($LASTEXITCODE) { throw 'Topic example enrichment failed' }
+    $exampleSnapshot = & "$PostgresBin\psql.exe" @client -Atc $snapshotSql
+    & "$PostgresBin\psql.exe" @client -f database/week4/import/data/apply_topic_examples.sql
+    if ($LASTEXITCODE -or $exampleSnapshot -ne (& "$PostgresBin\psql.exe" @client -Atc $snapshotSql)) {
+        throw 'Topic examples changed when reapplied'
+    }
+    $examples = @(& "$PostgresBin\psql.exe" @client -Atc $exampleSql)
+    if ($LASTEXITCODE -or $examples.Count -ne 6 -or ($examples -notmatch '^[^|]+\|15\|15$')) {
+        throw "Unexpected bilingual examples coverage: $examples"
+    }
+    "PASS six decks have bilingual examples on all 90 cards, and reapplying is safe"
+
     & "$PostgresBin\psql.exe" @client -f database/week4/import/data/apply_pronunciations.sql
     if ($LASTEXITCODE) { throw 'Pronunciation enrichment failed' }
     $audioSnapshot = & "$PostgresBin\psql.exe" @client -Atc $snapshotSql

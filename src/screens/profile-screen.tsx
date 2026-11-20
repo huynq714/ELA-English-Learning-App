@@ -15,14 +15,14 @@ import { colors, fonts } from '@/theme/tokens';
 export default function ProfileScreen() {
   const { state } = useSession();
   const profile = useProfileViewModel();
-  const [editing, setEditing] = useState<'level' | 'goal' | null>(null);
+  const [editingLevel, setEditingLevel] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   if (state.status !== 'signed-in') return null;
   const disabled = !!profile.busy;
 
   const saveProfile = async () => {
     Keyboard.dismiss();
-    setEditing(null);
+    setEditingLevel(false);
     if (await profile.save()) setShowSaved(true);
   };
 
@@ -55,27 +55,20 @@ export default function ProfileScreen() {
       </Field>
       <Field label="Trình độ tiếng Anh">
         <SelectRow label="Trình độ tiếng Anh" value={`${profile.level} — ${levelLabels[profile.level]}`}
-          expanded={editing === 'level'} disabled={disabled} onPress={() => setEditing(editing === 'level' ? null : 'level')} />
-        {editing === 'level' && <View style={styles.options}>
+          expanded={editingLevel} disabled={disabled} onPress={() => setEditingLevel(!editingLevel)} />
+        {editingLevel && <View style={styles.options}>
           {levels.map(level => <Pressable accessibilityRole="button" key={level} disabled={disabled}
             accessibilityState={{ selected: level === profile.level }}
             style={[styles.option, level === profile.level && styles.selected]}
-            onPress={() => { profile.setLevel(level); setEditing(null); }}>
+            onPress={() => { profile.setLevel(level); setEditingLevel(false); }}>
             <AppText color={level === profile.level ? colors.primary : colors.textPrimary}>{level} — {levelLabels[level]}</AppText>
           </Pressable>)}
         </View>}
       </Field>
-      <Field label="Mục tiêu học mỗi ngày">
-        <SelectRow label="Mục tiêu học mỗi ngày" value={`${profile.goal || '–'} phút mỗi ngày`}
-          expanded={editing === 'goal'} disabled={disabled} onPress={() => setEditing(editing === 'goal' ? null : 'goal')} />
-        {editing === 'goal' && <TextInput accessibilityLabel="Số phút học mỗi ngày" keyboardType="number-pad"
-          placeholder="Từ 5 đến 240 phút" maxLength={3} editable={!disabled} autoFocus
-          value={profile.goal} onChangeText={profile.setGoal} style={[styles.field, styles.input]} />}
-      </Field>
       <AppText size={13} color={colors.textSecondary}>Cập nhật thông tin để việc học phù hợp hơn với bạn.</AppText>
       <SelectRow label="Đổi mật khẩu" value="Đổi mật khẩu" disabled={disabled} onPress={() => {
         Keyboard.dismiss();
-        setEditing(null);
+        setEditingLevel(false);
         router.push('/change-password');
       }} />
       <PrimaryButton title={profile.busy === 'save' ? 'Đang lưu…' : 'Lưu thay đổi'} testID="profile-save"

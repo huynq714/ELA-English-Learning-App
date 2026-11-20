@@ -13,12 +13,12 @@ import { colors } from '@/theme/tokens';
 
 const assets = figmaAssets.vocabulary;
 
-function DeckCard({ deck, purple }: { deck: Deck; purple: boolean }) {
+function DeckCard({ deck }: { deck: Deck }) {
   const detail = [deck.level ? `Trình độ ${deck.level}` : null, deck.description]
     .filter(Boolean).join(' · ') || 'Bộ từ vựng';
   return <Pressable accessibilityRole="button" accessibilityLabel={`${deck.title}, ${detail}`}
     onPress={() => router.push(`/flashcard?deckId=${encodeURIComponent(deck.id)}&deckTitle=${encodeURIComponent(deck.title)}`)} style={styles.deck}>
-    <Asset source={purple ? assets.folderIllustration1 : assets.folderIllustration} width={49} height={43} />
+    <Asset source={assets.folderIllustration} width={49} height={43} />
     <View style={styles.deckText}>
       <AppText size={18} weight="bold" numberOfLines={1}>{deck.title}</AppText>
       <AppText size={13} color={colors.muted} numberOfLines={1}>{detail}</AppText>
@@ -79,7 +79,7 @@ export default function VocabularyScreen() {
       <AppText color={colors.muted}>{hasCatalogue ? 'Thử đổi từ khóa hoặc chủ đề.' : 'Bạn có thể xem trình độ trong hồ sơ.'}</AppText>
     </View>}
     {decks.length > 0 && <View style={styles.list}>
-      {decks.map((deck, index) => <DeckCard key={deck.id} deck={deck} purple={index % 3 === 2} />)}
+      {decks.map(deck => <DeckCard key={deck.id} deck={deck} />)}
     </View>}
     <View style={styles.addRow}>
       <Pressable accessibilityRole="button" accessibilityLabel="Thêm bộ từ" onPress={() => notice('Tạo bộ từ')} style={styles.add}>

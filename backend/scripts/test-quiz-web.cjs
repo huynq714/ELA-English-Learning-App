@@ -8,9 +8,9 @@ const web = `http://127.0.0.1:${process.env.QUIZ_WEB_PORT}`;
 const api = `http://127.0.0.1:${process.env.AUTH_SMOKE_PORT}`;
 const edge = process.env.QUIZ_EDGE_PATH || join(process.env['ProgramFiles(x86)'], 'Microsoft/Edge/Application/msedge.exe');
 
-async function backend(path, body, token) {
+async function backend(path, body, token, method = body ? 'POST' : 'GET') {
   const response = await fetch(`${api}/api/v1${path}`, {
-    ...(body ? { method: 'POST', body: JSON.stringify(body) } : {}),
+    ...(body ? { method, body: JSON.stringify(body) } : {}),
     headers: { ...(body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}) },
   });
@@ -46,6 +46,8 @@ async function run() {
   const session = await backend('/auth/register', {
     email, displayName: 'Quiz web E2E', password, confirmPassword: password, englishLevel: 'A1',
   });
+  const profilePath = '/users/me/profile';
+  await backend(profilePath, { dailyGoalMinutes: 37 }, session.accessToken, 'PATCH');
   const decks = await backend('/decks', null, session.accessToken);
   const deck = decks.find(item => item.topicKey === 'a1-communication-feelings');
   const words = await backend(`/decks/${deck.id}/words`, null, session.accessToken);
@@ -121,7 +123,29 @@ async function run() {
     await page.getByTestId('login-submit').click();
     await page.getByTestId('screen-home').waitFor({ timeout: 60000 });
     console.log('PASS Web login enters Home');
+    await page.getByTestId('tab-profile').click();
+    const profile = page.getByTestId('screen-profile');
+    await profile.getByLabel('Tên hiển thị', { exact: true }).fill('Quiz Web Edited');
+    assert(!(await profile.getByText('Mục tiêu học mỗi ngày', { exact: true }).isVisible()));
+    await profile.getByTestId('profile-save').click();
+    const profileSaved = page.getByTestId('profile-save-success');
+    await profileSaved.waitFor();
+    const saved = await backend(profilePath, null, session.accessToken);
+    assert.equal(saved.displayName, 'Quiz Web Edited');
+    assert.equal(saved.dailyGoalMinutes, 37);
+    console.log('PASS Web hides the daily goal and profile saves preserve its stored value');
+    await profileSaved.getByRole('button', { name: 'Đã hiểu' }).click();
+    await profileSaved.waitFor({ state: 'hidden' });
+    await profile.getByTestId('profile-back').click();
+    await page.getByTestId('screen-home').waitFor();
     await page.getByTestId('tab-vocabulary').click();
+    const folderImages = page.getByTestId('screen-vocabulary').locator('img[src*="vocabulary-folder-illustration"]');
+    await folderImages.first().waitFor();
+    const folderSources = await folderImages.evaluateAll(images => images.map(image => image.getAttribute('src')));
+    assert.equal(folderSources.length, decks.length);
+    assert.equal(new Set(folderSources).size, 1);
+    assert(!folderSources[0].includes('illustration1'));
+    console.log('PASS Web uses the same green folder for every deck');
     const sources = page.getByRole('button', { name: 'Nguồn học liệu', exact: true });
     const sourceDialog = page.getByTestId('vocabulary-sources-dialog');
     const closeSources = sourceDialog.getByRole('button', { name: 'Đóng', exact: true });
