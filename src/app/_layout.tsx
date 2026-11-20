@@ -55,6 +55,7 @@ function AppNavigator() {
       <Stack.Screen name="index" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
+      <Stack.Screen name="(password-recovery)" />
     </Stack.Protected>
     <Stack.Protected guard={signedIn}>
       <Stack.Screen name="home" />

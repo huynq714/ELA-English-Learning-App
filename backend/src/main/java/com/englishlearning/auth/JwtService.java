@@ -57,7 +57,7 @@ public class JwtService {
                 version.getBytes(StandardCharsets.UTF_8), credentialVersion(user).getBytes(StandardCharsets.UTF_8));
     }
 
-    private String credentialVersion(User user) {
+    String credentialVersion(User user) {
         // Invalidate old sessions on password change without putting the stored hash in the token.
         try {
             var mac = Mac.getInstance("HmacSHA256");

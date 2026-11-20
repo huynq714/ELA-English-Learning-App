@@ -68,7 +68,7 @@ export function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
           })}
         </View>}
       </View>}
-      {!register && <Pressable accessibilityRole="button" onPress={() => notice('Khôi phục mật khẩu')} style={styles.recovery}>
+      {!register && <Pressable accessibilityRole="link" onPress={() => router.push('/forgot-password')} style={styles.recovery}>
         <AppText size={13} weight="semibold" color={colors.primary}>Quên mật khẩu?</AppText>
       </Pressable>}
       {state.status === 'signed-out' && state.message && !register && !form.error &&

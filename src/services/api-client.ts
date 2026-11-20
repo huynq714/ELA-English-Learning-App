@@ -51,6 +51,9 @@ async function request<T>(method: 'GET' | 'POST' | 'PATCH', path: string, body?:
     }
     throw new ApiError(message, response.status, code);
   }
+  if (response.status === 204) {
+    return undefined as T;
+  }
 
   try {
     return await response.json() as T;

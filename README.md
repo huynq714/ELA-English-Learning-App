@@ -8,6 +8,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 
 - Danh mục Deck: đọc bằng JWT, lọc theo trình độ trong Profile. Xem [hướng dẫn sáu Deck A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md). Tạo, cập nhật và soft-delete Deck demo qua profile `local`.
 - Auth và Profile: đăng ký, đăng nhập bằng email, JWT và cập nhật hồ sơ của tài khoản đang đăng nhập. Xem [kịch bản demo Week 4](docs/week4-demo/WEEK4_AUTH_PROFILE_TEST.md).
+- Quên mật khẩu qua Gmail: [cài đặt SMTP và kiểm thử trên Expo Go](docs/week4-demo/WEEK4_PASSWORD_RESET.md).
 - Các API `/api/v1/dev/...` chỉ phục vụ Backend chạy native với profile `local` và yêu cầu đến từ loopback.
 - Profile chưa có API DELETE. Deck DELETE đặt `is_published=false`, không xóa hàng khỏi database.
 - Flashcards lưu vị trí học. Quiz xếp đề, chấm điểm và lưu kết quả theo tài khoản. Xem [kịch bản Flashcards và Quiz](docs/week4-demo/WEEK4_FLASHCARDS_QUIZ_TEST.md).
@@ -31,6 +32,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 5. Với database mới, chạy thêm [migration Vocabulary Week 4](database/week4/migrations/V1_2__source_vocabulary_fields.sql) một lần để Backend xác thực schema.
 6. Áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) nếu database chưa có cột `quiz_attempts.question_snapshot`.
 7. Chạy [lệnh sao lưu và nạp danh mục A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend.
+8. Áp dụng [migration khôi phục mật khẩu](database/week4/migrations/V1_5__password_reset.sql) để dùng Gmail OTP.
 
 Kiểm tra:
 
@@ -41,7 +43,7 @@ SELECT count(*) AS tables FROM information_schema.tables
 WHERE table_schema='public' AND table_type='BASE TABLE';
 ```
 
-Kết quả mong đợi: `english_learning_db`, `UTF8`, `16`.
+Kết quả mong đợi là `english_learning_db`, `UTF8` và 18 bảng sau migration khôi phục mật khẩu (16 bảng gốc và 2 bảng mới).
 
 ### A2. Chạy Backend
 

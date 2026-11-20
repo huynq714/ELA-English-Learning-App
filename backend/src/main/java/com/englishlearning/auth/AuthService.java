@@ -97,7 +97,7 @@ public class AuthService {
         }
     }
 
-    private static void validateNewPassword(String password, String confirmation) {
+    static void validateNewPassword(String password, String confirmation) {
         if (!password.equals(confirmation)) {
             throw new AuthException(HttpStatus.BAD_REQUEST, "PASSWORD_MISMATCH", "Passwords do not match");
         }
@@ -112,7 +112,7 @@ public class AuthService {
         return new AuthException(HttpStatus.FORBIDDEN, "ACCOUNT_UNAVAILABLE", "Account not available");
     }
 
-    private static String normalizeEmail(String email) { return email.strip().toLowerCase(Locale.ROOT); }
+    static String normalizeEmail(String email) { return email.strip().toLowerCase(Locale.ROOT); }
     private static int utf8Length(String text) { return text.getBytes(StandardCharsets.UTF_8).length; }
     private static AuthException duplicateEmail() {
         return new AuthException(HttpStatus.CONFLICT, "EMAIL_TAKEN", "Email is already registered");

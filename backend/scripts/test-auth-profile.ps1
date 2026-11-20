@@ -2,10 +2,11 @@ param(
     [string]$PostgresBin = 'C:\Program Files\PostgreSQL\18\bin',
     [int]$DatabasePort = 55436,
     [int]$ApiPort = 58125,
-    [ValidateSet('Auth', 'Quiz')]
+    [ValidateSet('Auth', 'Quiz', 'PasswordReset')]
     [string]$Suite = 'Auth',
     [switch]$Web,
-    [int]$WebPort = 58126
+    [int]$WebPort = 58126,
+    [int]$SmtpPort = 58128
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,7 +15,8 @@ $isolated = Join-Path $root ('.artifacts\week4-auth-' + [Guid]::NewGuid().ToStri
 $envNames = @('PGPASSWORD','PGCLIENTENCODING','DB_USERNAME','DB_PASSWORD','SPRING_DATASOURCE_URL',
               'AUTH_JWT_SECRET','AUTH_TOKEN_TTL','AUTH_SMOKE_PORT','QUIZ_SMOKE_PSQL',
               'QUIZ_SMOKE_DB_PORT','QUIZ_SMOKE_STATE','QUIZ_SMOKE_PASSWORD','QUIZ_WEB_PORT',
-              'EXPO_PUBLIC_API_BASE_URL','EXPO_OFFLINE','CI')
+              'EXPO_PUBLIC_API_BASE_URL','EXPO_OFFLINE','CI','MAIL_USERNAME','MAIL_APP_PASSWORD',
+              'RESET_SMOKE_SMTP_PORT','RESET_SMOKE_PSQL','RESET_SMOKE_DB_PORT')
 $previous = @{}
 foreach ($key in $envNames) { $previous[$key] = [Environment]::GetEnvironmentVariable($key) }
 $api = $null
@@ -25,6 +27,12 @@ function Start-SmokeBackend([string]$label) {
     $appLog = Join-Path $isolated "$label.log"
     $javaArgs = @('-cp', ('"' + $classpath + '"'), 'com.englishlearning.EnglishLearningApplication',
         '--server.address=127.0.0.1', "--server.port=$ApiPort", '--spring.profiles.active=default')
+    if ($Suite -eq 'PasswordReset') {
+        $javaArgs += @('--spring.mail.host=127.0.0.1', "--spring.mail.port=$SmtpPort",
+            '--spring.mail.properties[mail.smtp.auth]=false',
+            '--spring.mail.properties[mail.smtp.starttls.enable]=false',
+            '--spring.mail.properties[mail.smtp.starttls.required]=false')
+    }
     $script:api = Start-Process -FilePath (Join-Path $javaHome 'bin\java.exe') -ArgumentList $javaArgs -PassThru -WindowStyle Hidden -RedirectStandardOutput $appLog -RedirectStandardError (Join-Path $isolated "$label-error.log")
     for ($i = 0; $i -lt 65; $i++) {
         if ($script:api.HasExited) { break }
@@ -39,7 +47,7 @@ function Start-SmokeBackend([string]$label) {
 
 Push-Location $root
 try {
-    $listeners = netstat -ano -p TCP | Select-String -Pattern ":(${DatabasePort}|${ApiPort}|${WebPort})\s+\S+\s+LISTENING"
+    $listeners = netstat -ano -p TCP | Select-String -Pattern ":(${DatabasePort}|${ApiPort}|${WebPort}|${SmtpPort})\s+\S+\s+LISTENING"
     if ($listeners) { throw 'Use unused test ports for PostgreSQL and the API' }
     $report = Get-ChildItem backend/target/surefire-reports -Filter 'TEST-*.xml' | Select-Object -First 1
     [xml]$reportXml = Get-Content -LiteralPath $report.FullName -Raw
@@ -66,7 +74,8 @@ try {
         -f database/week4/migrations/V1_3__quiz_question_snapshot.sql `
         -f database/week4/import/data/apply_a1_import.sql `
         -f database/week4/migrations/V1_4__topic_deck_catalog.sql `
-        -f database/week4/import/data/apply_topic_decks.sql
+        -f database/week4/import/data/apply_topic_decks.sql `
+        -f database/week4/migrations/V1_5__password_reset.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $bytes = [byte[]]::new(32)
@@ -78,6 +87,18 @@ try {
     $env:DB_USERNAME = 'auth_check'
     $env:DB_PASSWORD = $password
     $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://127.0.0.1:$DatabasePort/postgres"
+    if ($Suite -eq 'PasswordReset') {
+        $env:MAIL_USERNAME = 'ela-recovery@example.test'
+        $env:MAIL_APP_PASSWORD = 'local-smtp-test'
+        $env:RESET_SMOKE_SMTP_PORT = [string]$SmtpPort
+        $env:RESET_SMOKE_DB_PORT = [string]$DatabasePort
+        $env:RESET_SMOKE_PSQL = "$PostgresBin\psql.exe"
+        Start-SmokeBackend 'spring'
+        python backend/scripts/test_password_reset.py
+        if ($LASTEXITCODE) { throw "Password reset HTTP/SQL/SMTP checks failed. See $isolated" }
+        "Password reset evidence directory: $isolated"
+        return
+    }
     Start-SmokeBackend 'spring'
     if ($Suite -eq 'Quiz') {
         $env:QUIZ_SMOKE_PSQL = "$PostgresBin\psql.exe"

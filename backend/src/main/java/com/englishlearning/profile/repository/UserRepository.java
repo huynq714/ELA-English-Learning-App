@@ -15,6 +15,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByNormalizedEmail(@Param("email") String email);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where lower(u.email) = :email")
+    Optional<User> findForPasswordReset(@Param("email") String email);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.id = :id")
     Optional<User> findForPasswordChange(@Param("id") UUID id);
 }
