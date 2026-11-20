@@ -1,13 +1,15 @@
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import * as Speech from 'expo-speech';
-import { useCallback, useRef, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Asset, PrimaryButton, ProgressBar, Screen } from '@/components/ui';
 import { StudyFlashcard } from '@/features/vocabulary/components/study-flashcard';
+import { VocabularySources } from '@/features/vocabulary/components/vocabulary-sources';
 import { useDeckWordsViewModel } from '@/features/vocabulary/hooks/use-deck-words-view-model';
+import { useFlashcardAudio } from '@/features/vocabulary/hooks/use-flashcard-audio';
 import { useStudyProgress } from '@/features/vocabulary/hooks/use-study-progress';
 import { verifiedVietnamese } from '@/features/vocabulary/models/word';
+import { dictionaryRecording, wordAttributions } from '@/features/vocabulary/models/word-provenance';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
@@ -31,14 +33,6 @@ export default function FlashcardScreen() {
   const [deferredIds, setDeferredIds] = useState<string[]>([]);
   const [cardTurn, setCardTurn] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [speechFailed, setSpeechFailed] = useState(false);
-  const speechVersion = useRef(0);
-
-  const stopSpeech = useCallback(() => {
-    speechVersion.current++;
-    void Speech.stop().catch(() => {});
-  }, []);
-  useFocusEffect(useCallback(() => stopSpeech, [stopSpeech]));
 
   const requiredIds = new Set([
     ...(learning.progress?.unstudiedWordIds ?? []),
@@ -51,6 +45,8 @@ export default function FlashcardScreen() {
   const next = remaining.find(item => !deferredIds.includes(item.id))
     ?? deferredIds.map(id => remaining.find(item => item.id === id)).find(item => item !== undefined);
   const card = loading || unavailable || done ? undefined : next;
+  const cardKey = card ? `${card.id}:${cardTurn}` : '';
+  const audio = useFlashcardAudio(cardKey);
 
   const saveRating = async (wordId: string) => {
     const saved = await learning.study(wordId);
@@ -64,8 +60,7 @@ export default function FlashcardScreen() {
 
   const rate = (rating: Rating) => {
     if (!card || learning.pending || learning.unsavedWordId) return;
-    stopSpeech();
-    setSpeechFailed(false);
+    audio.stopPlayback();
     if (rating === 'Again') {
       setDeferredIds(previous => [...previous.filter(id => id !== card.id), card.id]);
       setCardTurn(previous => previous + 1);
@@ -74,27 +69,17 @@ export default function FlashcardScreen() {
     }
   };
 
-  const speak = async (text: string) => {
-    const version = ++speechVersion.current;
-    const showError = () => {
-      if (version === speechVersion.current) setSpeechFailed(true);
-    };
-    setSpeechFailed(false);
-    try {
-      await Speech.stop();
-      if (version === speechVersion.current) {
-        Speech.speak(text, { language: 'en-US', onError: showError });
-      }
-    } catch {
-      showError();
-    }
-  };
-
   const backToVocabulary = () => router.dismissTo('/vocabulary');
 
   return <Screen testID="screen-flashcard" contentStyle={styles.content}
-    header={(card || done) && <View style={styles.progress}>
-      <ProgressBar value={done ? 1 : (words.length - remaining.length + 1) / words.length} />
+    header={(card || done) && <View style={styles.header}>
+      <View style={styles.progress}>
+        <ProgressBar value={done ? 1 : (words.length - remaining.length + 1) / words.length} />
+      </View>
+      {card && <VocabularySources key={cardKey} entries={wordAttributions(card)}
+        playbackNote={dictionaryRecording(card)
+          ? (card.exampleEn ? 'Câu ví dụ dùng giọng máy.' : undefined)
+          : (card.exampleEn ? 'Từ và câu ví dụ dùng giọng máy.' : 'Từ này dùng giọng máy.')} />}
     </View>}
     footer={card && <View style={styles.ratings}>
       {ratings.map(({ label, icon, background, color }) => <Pressable key={label} accessibilityRole="button"
@@ -117,7 +102,7 @@ export default function FlashcardScreen() {
       <AppText weight="semibold">Bộ từ này chưa có thẻ</AppText>
       <PrimaryButton title={isRefreshing ? 'Đang tải lại…' : 'Tải lại'} disabled={isRefreshing} onPress={() => void refresh()} />
     </View>}
-    {card && <StudyFlashcard key={`${card.id}:${cardTurn}`} word={card} onSpeak={text => void speak(text)} speechFailed={speechFailed} />}
+    {card && <StudyFlashcard key={cardKey} word={card} audio={audio} />}
     {learning.unsavedWordId && <View style={styles.state}>
       <AppText accessibilityRole="alert" color={colors.error}>Chưa lưu được lượt học.</AppText>
       <PrimaryButton title="Thử lưu lại" disabled={learning.pending}
@@ -138,7 +123,8 @@ export default function FlashcardScreen() {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 22, paddingVertical: 14, gap: 14 },
-  progress: { paddingHorizontal: 22, paddingTop: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingLeft: 22, paddingRight: 12, gap: 8 },
+  progress: { flex: 1, minHeight: 16, justifyContent: 'center' },
   state: { gap: 12, paddingVertical: 12 },
   center: { textAlign: 'center' },
   ratings: { flexDirection: 'row', gap: 8, paddingHorizontal: 22, paddingBottom: 12 },

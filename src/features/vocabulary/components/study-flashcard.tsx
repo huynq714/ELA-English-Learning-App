@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { AppText, Asset } from '@/components/ui';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
+import type { useFlashcardAudio } from '../hooks/use-flashcard-audio';
 import { verifiedVietnamese, type Word } from '../models/word';
+import { dictionaryRecording } from '../models/word-provenance';
 
-export function StudyFlashcard({ word, onSpeak, speechFailed }: {
-  word: Word; onSpeak: (text: string) => void; speechFailed: boolean;
+export function StudyFlashcard({ word, audio }: {
+  word: Word; audio: ReturnType<typeof useFlashcardAudio>;
 }) {
   const [revealed, setRevealed] = useState(false);
   const [turning, setTurning] = useState(false);
@@ -18,6 +20,7 @@ export function StudyFlashcard({ word, onSpeak, speechFailed }: {
   const meaningVi = verifiedVietnamese(word);
   const meaning = meaningVi ?? word.definitionEn ?? 'Thẻ này chưa có định nghĩa.';
   const example = word.exampleEn;
+  const recording = dictionaryRecording(word);
 
   useEffect(() => () => angle.stopAnimation(), [angle]);
 
@@ -73,24 +76,35 @@ export function StudyFlashcard({ word, onSpeak, speechFailed }: {
         </AppText>
       </Pressable>
       <View style={styles.wordAudio}>
-        <AudioButton label="Nghe phát âm từ" onPress={() => onSpeak(word.headword)} />
+        <AudioButton label="Nghe phát âm từ" detail={recording ? recording.accent ?? 'Từ điển' : 'Giọng máy'}
+          loading={audio.playback?.phase === 'loading' && audio.playback.target === 'word'}
+          onPress={() => void audio.play('word', recording ?? { text: word.headword })} />
       </View>
     </Animated.View>
     {example && <View style={styles.example}>
       <AppText size={19} style={styles.exampleText}>{example}</AppText>
       {revealed && word.exampleVi && <AppText color={colors.textSecondary}>{word.exampleVi}</AppText>}
       <View style={styles.exampleAudio}>
-        <AudioButton label="Nghe câu ví dụ" onPress={() => onSpeak(example)} />
+        <AudioButton label="Nghe câu ví dụ" detail="Giọng máy"
+          loading={audio.playback?.phase === 'loading' && audio.playback.target === 'example'}
+          onPress={() => void audio.play('example', { text: example })} />
       </View>
     </View>}
-    {speechFailed && <AppText accessibilityRole="alert" color={colors.textSecondary}>Chưa phát được âm thanh. Hãy thử lại.</AppText>}
+    {audio.playback?.phase === 'error' && <AppText accessibilityRole="alert" color={colors.textSecondary}>
+      {audio.playback.target === 'word' && recording
+        ? 'Chưa phát được bản ghi từ điển. Kiểm tra mạng rồi thử lại.'
+        : 'Chưa phát được âm thanh. Hãy thử lại.'}
+    </AppText>}
   </View>;
 }
 
-function AudioButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
+function AudioButton({ label, detail, loading, onPress }: {
+  label: string; detail: string; loading: boolean; onPress: () => void;
+}) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint={detail}
+    accessibilityState={{ busy: loading }} onPress={onPress}
     style={({ pressed }) => [styles.audio, pressed && styles.pressed]}>
-    <Asset source={figmaAssets.flashcard.volume2} width={23} />
+    {loading ? <ActivityIndicator color={colors.primary} /> : <Asset source={figmaAssets.flashcard.volume2} width={23} />}
   </Pressable>;
 }
 
@@ -106,8 +120,8 @@ const styles = StyleSheet.create({
     gap: 12, justifyContent: 'center', alignItems: 'center' },
   center: { textAlign: 'center' },
   hint: { marginTop: 12, textAlign: 'center' },
-  wordAudio: { position: 'absolute', top: 10, right: 10 },
-  audio: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.lavender },
+  wordAudio: { position: 'absolute', top: 8, right: 10 },
+  audio: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.lavender },
   pressed: { opacity: 0.72 },
   example: { gap: 10, paddingHorizontal: 10 },
   exampleText: { lineHeight: 28 },

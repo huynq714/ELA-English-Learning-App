@@ -78,6 +78,36 @@ try {
         -f database/week4/migrations/V1_5__password_reset.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
+    $snapshotSql = 'SELECT md5(string_agg(to_jsonb(w)::text, '''' ORDER BY w.id)) FROM words w;'
+    & "$PostgresBin\psql.exe" @client -f database/week4/import/data/apply_pronunciations.sql
+    if ($LASTEXITCODE) { throw 'Pronunciation enrichment failed' }
+    $audioSnapshot = & "$PostgresBin\psql.exe" @client -Atc $snapshotSql
+    & "$PostgresBin\psql.exe" @client -f database/week4/import/data/apply_pronunciations.sql
+    if ($LASTEXITCODE) { throw 'Reapplying pronunciation enrichment failed' }
+    if ($audioSnapshot -ne (& "$PostgresBin\psql.exe" @client -Atc $snapshotSql)) {
+        throw 'Reapplying pronunciation enrichment changed word data'
+    }
+    $countsSql = @'
+WITH scope AS (
+    SELECT 'all' AS catalogue, id, audio_url FROM words
+    UNION ALL
+    SELECT DISTINCT 'topics', w.id, w.audio_url
+    FROM words w JOIN deck_words dw ON dw.word_id = w.id JOIN decks d ON dw.deck_id = d.id
+    WHERE d.topic_key IS NOT NULL
+)
+SELECT catalogue, count(audio_url), count(*) - count(audio_url),
+       count(*) FILTER (WHERE audio_url IS NOT NULL AND audio_url IS DISTINCT FROM
+           (SELECT source_metadata #>> '{pronunciation,audio,audioUrl}' FROM words WHERE id = scope.id))
+FROM scope GROUP BY catalogue ORDER BY catalogue;
+'@
+    $counts = @(& "$PostgresBin\psql.exe" @client -Atc $countsSql)
+    if ($LASTEXITCODE -or $counts.Count -ne 2 -or
+        $counts[0] -notmatch '^all\|[1-9][0-9]*\|[0-9]+\|0$' -or
+        $counts[1] -notmatch '^topics\|[1-9][0-9]*\|[0-9]+\|0$') {
+        throw "Unexpected pronunciation coverage: $counts"
+    }
+    "PASS PostgreSQL pronunciation coverage (scope|with audio|without audio|provenance mismatch): $counts"
+
     $bytes = [byte[]]::new(32)
     $generator = [Security.Cryptography.RandomNumberGenerator]::Create()
     try { $generator.GetBytes($bytes) } finally { $generator.Dispose() }

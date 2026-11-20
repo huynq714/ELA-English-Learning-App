@@ -4,7 +4,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { useDemoNotice } from '@/components/demo-notice';
 import { AppHeader, AppText, AppTextInput, Asset, Screen, SegmentedControl } from '@/components/ui';
+import { VocabularySources } from '@/features/vocabulary/components/vocabulary-sources';
 import type { Deck } from '@/features/vocabulary/models/deck';
+import { catalogueAttributions } from '@/features/vocabulary/models/word-provenance';
 import { useDecksViewModel } from '@/features/vocabulary/hooks/use-decks-view-model';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
@@ -31,7 +33,7 @@ export default function VocabularyScreen() {
     decks, topics, isLoading, isRefreshing, error, refresh, hasCatalogue, needsProfileLevel,
     search, setSearch, tab, setTab, selectedTopic, setTopicKey,
   } = useDecksViewModel();
-  return <Screen testID="screen-vocabulary" header={<AppHeader title="Từ vựng" trailing={
+  return <Screen testID="screen-vocabulary" header={<AppHeader title="Từ vựng" trailing={<View style={styles.headerActions}>
     <Pressable accessibilityRole="button" accessibilityLabel="Làm mới danh sách bộ từ"
       accessibilityState={{ disabled: isLoading || isRefreshing }} disabled={isLoading || isRefreshing}
       onPress={() => void refresh()} hitSlop={8}>
@@ -39,7 +41,8 @@ export default function VocabularyScreen() {
         {isRefreshing ? 'Đang tải…' : 'Làm mới'}
       </AppText>
     </Pressable>
-  } />}
+    <VocabularySources entries={catalogueAttributions} />
+  </View>} />}
     footer={<BottomNavigation active="vocabulary" />} contentStyle={styles.content}>
     <AppTextInput accessibilityLabel="Tìm theo tên bộ từ hoặc chủ đề" placeholder="Tìm theo tên bộ từ hoặc chủ đề"
       value={search} onChangeText={setSearch} autoCapitalize="none"
@@ -87,6 +90,7 @@ export default function VocabularyScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   content: { paddingTop: 12, paddingHorizontal: 22, paddingBottom: 20, gap: 20 },
   search: { minHeight: 48, padding: 13, gap: 10, borderRadius: 12 },
   topics: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

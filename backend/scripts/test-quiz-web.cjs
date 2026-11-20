@@ -22,6 +22,24 @@ async function waitForText(page, text) {
   await page.getByText(text, { exact: true }).first().waitFor();
 }
 
+function playbackFixture() {
+  // Four seconds of PCM silence lets the test observe interruption without depending on CDN access.
+  const bytes = Buffer.alloc(44 + 4 * 8000 * 2);
+  bytes.write('RIFF', 0);
+  bytes.writeUInt32LE(bytes.length - 8, 4);
+  bytes.write('WAVEfmt ', 8);
+  bytes.writeUInt32LE(16, 16);
+  bytes.writeUInt16LE(1, 20);
+  bytes.writeUInt16LE(1, 22);
+  bytes.writeUInt32LE(8000, 24);
+  bytes.writeUInt32LE(16000, 28);
+  bytes.writeUInt16LE(2, 32);
+  bytes.writeUInt16LE(16, 34);
+  bytes.write('data', 36);
+  bytes.writeUInt32LE(bytes.length - 44, 40);
+  return bytes;
+}
+
 async function run() {
   const email = `quiz-web-${randomUUID()}@example.test`;
   const password = process.env.QUIZ_SMOKE_PASSWORD;
@@ -29,7 +47,7 @@ async function run() {
     email, displayName: 'Quiz web E2E', password, confirmPassword: password, englishLevel: 'A1',
   });
   const decks = await backend('/decks', null, session.accessToken);
-  const deck = decks.find(item => item.topicKey === 'a1-time-frequency');
+  const deck = decks.find(item => item.topicKey === 'a1-communication-feelings');
   const words = await backend(`/decks/${deck.id}/words`, null, session.accessToken);
   const translations = new Map(words.map(word => [word.headword, word.meaningVi]));
   const originals = new Map(words.map(word => [word.meaningVi, word.headword]));
@@ -43,6 +61,13 @@ async function run() {
     page.setDefaultTimeout(20000);
     await page.addInitScript(() => {
       window.flashcardSpeech = [];
+      window.flashcardMedia = [];
+      const play = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function () {
+        const playback = play.call(this);
+        playback.then(() => window.flashcardMedia.push({ url: this.currentSrc, media: this })).catch(() => {});
+        return playback;
+      };
       window.speechSynthesis.speak = utterance => {
         window.flashcardSpeech.push(utterance.text);
         utterance.onend?.();
@@ -97,6 +122,14 @@ async function run() {
     await page.getByTestId('screen-home').waitFor({ timeout: 60000 });
     console.log('PASS Web login enters Home');
     await page.getByTestId('tab-vocabulary').click();
+    const sources = page.getByRole('button', { name: 'Nguồn học liệu', exact: true });
+    const sourceDialog = page.getByTestId('vocabulary-sources-dialog');
+    const closeSources = sourceDialog.getByRole('button', { name: 'Đóng', exact: true });
+    await sources.click();
+    await sourceDialog.getByRole('link', { name: 'CEFR-J Wordlist v1.6' }).waitFor();
+    await sourceDialog.getByText('Yukio Tono – Tokyo University of Foreign Studies').waitFor();
+    await closeSources.click();
+    await sourceDialog.waitFor({ state: 'hidden' });
     await page.getByRole('button', { name: new RegExp(deck.title) }).click();
     await page.getByTestId('screen-flashcard').waitFor();
     const quizEntry = page.getByTestId('flashcard-start-quiz');
@@ -130,8 +163,6 @@ async function run() {
     await translatedExample.waitFor();
     await page.locator('[data-testid="flashcard-flip"]:not([aria-disabled="true"])').waitFor();
     await page.screenshot({ path: join(evidence, 'flashcard-back-web.png') });
-    await page.getByRole('button', { name: 'Nghe phát âm từ' }).click();
-    await page.waitForFunction(value => window.flashcardSpeech.includes(value), firstWord);
     await page.getByRole('button', { name: 'Nghe câu ví dụ' }).click();
     await page.waitForFunction(value => window.flashcardSpeech.includes(value), data.exampleEn);
 
@@ -140,14 +171,57 @@ async function run() {
     assert(!(await meaning.isVisible()), 'Flipping back must hide the meaning');
     await page.getByRole('button', { name: 'Again', exact: true }).click();
     await heading.filter({ hasNotText: firstWord }).waitFor();
+    let usedRecording = false;
+    let usedSpeech = false;
     for (let studied = 0; studied < words.length; studied++) {
       const current = await heading.textContent();
+      const word = words.find(item => item.headword === current);
       assert(!(await meaning.isVisible()), 'Every new card must start on the front');
       assert(!(await quizEntry.isVisible()), 'Quiz must stay outside the study screen');
       if (studied === words.length - 1) assert.equal(current, firstWord, 'Again queues the card at the end');
+      const speaker = card.getByRole('button', { name: 'Nghe phát âm từ', exact: true });
+      assert.equal((await speaker.textContent())?.trim(), '', 'The speaker button should show only an icon');
+      if (word.audioUrl && !usedRecording) {
+        await sources.click();
+        await sourceDialog.getByText('Bản ghi phát âm', { exact: true }).waitFor();
+        await sourceDialog.getByRole('link', { name: /Free Dictionary API \(en-US\)/ }).waitFor();
+        await page.screenshot({ path: join(evidence, 'flashcard-sources-web.png') });
+        await closeSources.click();
+        await sourceDialog.waitFor({ state: 'hidden' });
+        const isRecording = url => url.href === word.audioUrl;
+        await page.route(isRecording, route => route.fulfill({
+          status: 200, contentType: 'audio/wav', body: playbackFixture(),
+        }));
+        await page.route(isRecording, route => route.abort(), { times: 1 });
+        await speaker.click();
+        await card.getByText('Chưa phát được bản ghi từ điển. Kiểm tra mạng rồi thử lại.').waitFor();
+        await speaker.click();
+        await page.waitForFunction(url => window.flashcardMedia.some(item => item.url === url), word.audioUrl);
+        await speaker.click();
+        await page.waitForFunction(url => {
+          const recordings = window.flashcardMedia.filter(item => item.url === url);
+          return recordings.length >= 2 && recordings[0].media.paused;
+        }, word.audioUrl);
+        assert(!(await page.evaluate(text => window.flashcardSpeech.includes(text), current)),
+          'A verified recording must never be presented as synthetic speech');
+        usedRecording = true;
+      } else if (!word.audioUrl && !usedSpeech) {
+        await sources.click();
+        await sourceDialog.getByText(/dùng giọng máy/).waitFor();
+        await closeSources.click();
+        await sourceDialog.waitFor({ state: 'hidden' });
+        await speaker.click();
+        await page.waitForFunction(text => window.flashcardSpeech.includes(text), current);
+        usedSpeech = true;
+      }
       await good.click();
+      if (word.audioUrl && usedRecording) {
+        await page.waitForFunction(() => window.flashcardMedia.every(item => item.media.paused));
+      }
       if (studied < words.length - 1) await heading.filter({ hasNotText: current }).waitFor();
     }
+    assert(usedRecording && usedSpeech, 'The deck should exercise both pronunciation modes');
+    console.log('PASS Web opens source dialogs from the header and keeps icon-only pronunciation controls working');
     await page.getByTestId('flashcards-completed').waitFor();
     await quizEntry.click();
     console.log('PASS Web rotates the card, hides meaning on the front, shows it on the back, and resets on the next card');

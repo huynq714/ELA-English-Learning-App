@@ -33,6 +33,7 @@ Thành viên đã có repo chạy `git pull --ff-only origin master` từ thư m
 6. Áp dụng [migration Quiz Week 4](database/week4/migrations/V1_3__quiz_question_snapshot.sql) nếu database chưa có cột `quiz_attempts.question_snapshot`.
 7. Chạy [lệnh sao lưu và nạp danh mục A1/A2](docs/week4-demo/WEEK4_TOPIC_DECKS_TEST.md#nạp-vào-postgresql) trước khi khởi động Backend.
 8. Áp dụng [migration khôi phục mật khẩu](database/week4/migrations/V1_5__password_reset.sql) để dùng Gmail OTP.
+9. Áp dụng [bản cập nhật nguồn và phát âm](docs/week4-demo/WEEK4_VOCABULARY_SOURCES.md) sau khi đã nạp từ vựng.
 
 Kiểm tra:
 
