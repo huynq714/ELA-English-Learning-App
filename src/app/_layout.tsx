@@ -68,6 +68,7 @@ function AppNavigator() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="change-password" />
       <Stack.Screen name="review" />
+      <Stack.Screen name="review-session" />
       <Stack.Screen name="ipa" />
       <Stack.Screen name="ai" />
     </Stack.Protected>

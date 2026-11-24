@@ -30,7 +30,8 @@ async function request<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: str
       signal: controller.signal,
     });
   } catch {
-    throw new ApiError('Không kết nối được Backend. Hãy kiểm tra máy chủ và địa chỉ API.');
+    throw new ApiError('Không kết nối được Backend. Hãy kiểm tra máy chủ và địa chỉ API.',
+      undefined, controller.signal.aborted ? 'TIMEOUT' : 'NETWORK_ERROR');
   } finally {
     clearTimeout(timeout);
   }

@@ -3,15 +3,15 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { ActivityCard, AppCard, AppText, Asset, Screen } from '@/components/ui';
-import { learningSummary } from '@/data/demo';
 import { useSession } from '@/features/auth/view-model/session-context';
+import { useReviewSummary } from '@/features/review/use-review-summary';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
 const assets = figmaAssets.home;
 
 function StatisticCard({ value, label, icon, onPress }:
-  { value: number; label: string; icon: number; onPress: () => void }) {
+  { value: number | string; label: string; icon: number; onPress: () => void }) {
   return <Pressable accessibilityRole="button" onPress={onPress} style={styles.metricPressable}>
     <AppCard style={styles.metric}>
       <Asset source={icon} width={31} />
@@ -26,6 +26,7 @@ function StatisticCard({ value, label, icon, onPress }:
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const { state } = useSession();
+  const { summary, pendingSessionId, error } = useReviewSummary();
   const landscapeWidth = Math.min(width, 480);
   if (state.status !== 'signed-in') return null;
   return <Screen testID="screen-home" footer={<BottomNavigation active="home" />}>
@@ -37,17 +38,20 @@ export default function HomeScreen() {
       <AppCard style={styles.streak}>
         <View style={styles.streakIcon}><Asset source={assets.flame} width={34} /></View>
         <View style={{ gap: 7 }}>
-          <AppText size={31} weight="extrabold">{learningSummary.streak}</AppText>
+          <AppText size={31} weight="extrabold">{summary?.currentStreak ?? '–'}</AppText>
           <AppText size={13} weight="semibold" color={colors.muted}>Ngày học liên tiếp</AppText>
         </View>
       </AppCard>
       <View style={styles.metrics}>
-        <StatisticCard value={learningSummary.learned} label="Từ đã học" icon={assets.bookOpen} onPress={() => router.navigate('/vocabulary')} />
-        <StatisticCard value={learningSummary.due} label="Từ cần ôn" icon={assets.layers} onPress={() => router.push('/review')} />
+        <StatisticCard value={summary?.learnedCount ?? '–'} label="Đã học qua" icon={assets.bookOpen} onPress={() => router.navigate('/vocabulary')} />
+        <StatisticCard value={summary?.dueCount ?? '–'} label="Đến hạn ôn" icon={assets.layers} onPress={() => router.push('/review')} />
+        <StatisticCard value={summary?.cramCount ?? '–'} label="Ôn thêm" icon={assets.bookOpen} onPress={() => router.push('/review')} />
       </View>
       <AppText size={19} weight="bold" accessibilityRole="header">Tiếp tục học</AppText>
       <View style={styles.activities}>
-        <ActivityCard title="Ôn tập SRS" subtitle="24 từ vựng đang chờ bạn" icon={assets.alarmClock}
+        <ActivityCard title="Ôn tập SRS" subtitle={pendingSessionId || summary?.activeSessionId ? 'Có phiên đang dở'
+          : summary ? (summary.dueCount > 0 ? `${summary.dueCount} từ vựng đang chờ bạn` : 'Chưa có từ đến hạn')
+          : error ? 'Chạm để thử lại' : 'Đang tải tiến độ'} icon={assets.alarmClock}
           chevron={assets.chevronRight} onPress={() => router.push('/review')} />
         <ActivityCard title="Hội thoại cùng AI" subtitle="Chủ đề: Food & Travel" icon={assets.messageSquare}
           chevron={assets.chevronRight} onPress={() => router.navigate('/ai')} />

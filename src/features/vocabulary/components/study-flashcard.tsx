@@ -9,8 +9,8 @@ import type { useFlashcardAudio } from '../hooks/use-flashcard-audio';
 import { verifiedVietnamese, type Word } from '../models/word';
 import { dictionaryRecording } from '../models/word-provenance';
 
-export function StudyFlashcard({ word, audio, bookmark }: {
-  word: Word; audio: ReturnType<typeof useFlashcardAudio>; bookmark?: ReactNode;
+export function StudyFlashcard({ word, audio, bookmark, onReveal }: {
+  word: Word; audio: ReturnType<typeof useFlashcardAudio>; bookmark?: ReactNode; onReveal?: (revealed: boolean) => void;
 }) {
   const [revealed, setRevealed] = useState(false);
   const [turning, setTurning] = useState(false);
@@ -28,6 +28,7 @@ export function StudyFlashcard({ word, audio, bookmark }: {
     if (turnInProgress.current) return;
     if (reduceMotion) {
       setRevealed(!revealed);
+      onReveal?.(!revealed);
       return;
     }
 
@@ -44,6 +45,7 @@ export function StudyFlashcard({ word, audio, bookmark }: {
         if (!arrived) return;
         turnInProgress.current = false;
         setTurning(false);
+        onReveal?.(!revealed);
       });
     });
   };
