@@ -1,9 +1,4 @@
 // Static display data transcribed from Figma. No services or persistence.
-export const learningSummary = {
-  learner: 'Thu Hà', streak: 12, learned: 320, due: 24,
-  newWords: 12, learning: 36, mastered: 168,
-} as const;
-
 export const decks = [
   { title: 'Công việc', count: 120, purple: false },
   { title: 'Travel', count: 85, purple: false },
