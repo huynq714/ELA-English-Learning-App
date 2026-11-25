@@ -1,0 +1,167 @@
+PASS TC-REG-01 A1 catalog: {'http': 200, 'expected': 200}
+
+PASS TC-REG-01 three A1 decks: 3
+
+PASS TC-REG-01 profile defaults: {'http': 200, 'expected': 200}
+
+PASS TC-REG-01 default goal 15: 15
+
+PASS TC-REG-01 BCrypt persisted: BCrypt prefix
+
+PASS TC-AUTH-03 blank email: {'http': 400, 'expected': 400}
+
+PASS TC-AUTH-03 blank password: {'http': 400, 'expected': 400}
+
+PASS TC-PASSWORD-06 reset token length 0: {'http': 400, 'expected': 400}
+
+PASS TC-PASSWORD-06 reset token length 42: {'http': 400, 'expected': 400}
+
+PASS TC-PASSWORD-06 reset token length 44: {'http': 400, 'expected': 400}
+
+PASS TC-AUTH-02 unknown user: {'http': 401, 'expected': 401}
+
+PASS TC-AUTH-02 disabled token: {'http': 403, 'expected': 403}
+
+PASS TC-PROFILE-03 goal=4: {'http': 400, 'expected': 400}
+
+PASS TC-PROFILE-03 persist goal=4: {'storedGoal': 15}
+
+PASS TC-PROFILE-03 goal=5: {'http': 200, 'expected': 200}
+
+PASS TC-PROFILE-03 persist goal=5: {'storedGoal': 5}
+
+PASS TC-PROFILE-03 goal=6: {'http': 200, 'expected': 200}
+
+PASS TC-PROFILE-03 persist goal=6: {'storedGoal': 6}
+
+PASS TC-PROFILE-03 goal=239: {'http': 200, 'expected': 200}
+
+PASS TC-PROFILE-03 persist goal=239: {'storedGoal': 239}
+
+PASS TC-PROFILE-03 goal=240: {'http': 200, 'expected': 200}
+
+PASS TC-PROFILE-03 persist goal=240: {'storedGoal': 240}
+
+PASS TC-PROFILE-03 goal=241: {'http': 400, 'expected': 400}
+
+PASS TC-PROFILE-03 persist goal=241: {'storedGoal': 240}
+
+PASS TC-PROFILE-03 goal=None: {'http': 400, 'expected': 400}
+
+PASS TC-PROFILE-03 persist goal=None: {'storedGoal': 240}
+
+PASS TC-HOME-01 summary bookmark=False: {'http': 200, 'expected': 200}
+
+PASS TC-HOME-01 zero counts bookmark=False: {'learnedCount': 0, 'dueCount': 0, 'cramCount': 0}
+
+PASS TC-FSRS-01 DUE bookmark=False: {'http': 200, 'expected': 200}
+
+PASS TC-FSRS-01 empty DUE bookmark=False: {'empty': True, 'sessionId': None}
+
+PASS TC-FSRS-01 CRAM bookmark=False: {'http': 200, 'expected': 200}
+
+PASS TC-FSRS-01 empty CRAM bookmark=False: {'empty': True, 'sessionId': None}
+
+PASS TC-HOME-01 bookmark only: {'http': 204, 'expected': 204}
+
+PASS TC-HOME-01 summary bookmark=True: {'http': 200, 'expected': 200}
+
+PASS TC-HOME-01 zero counts bookmark=True: {'learnedCount': 0, 'dueCount': 0, 'cramCount': 0}
+
+PASS TC-FSRS-01 DUE bookmark=True: {'http': 200, 'expected': 200}
+
+PASS TC-FSRS-01 empty DUE bookmark=True: {'empty': True, 'sessionId': None}
+
+PASS TC-FSRS-01 CRAM bookmark=True: {'http': 200, 'expected': 200}
+
+PASS TC-FSRS-01 empty CRAM bookmark=True: {'empty': True, 'sessionId': None}
+
+PASS TC-FSRS-01 no fake sessions/logs: session/log count = 0
+
+PASS TC-SAVED-01 repeat add: {'http': 204, 'expected': 204}
+
+PASS TC-SAVED-01 repeat add: {'http': 204, 'expected': 204}
+
+PASS TC-SAVED-01 one saved row: 1
+
+PASS TC-SAVED-01 other user cannot see bookmark: {'saved': False}
+
+PASS TC-SAVED-01 other user delete no-op: {'http': 204, 'expected': 204}
+
+PASS TC-SAVED-01 owner row retained: owner count=1
+
+PASS TC-SAVED-01 repeat removal: {'http': 204, 'expected': 204}
+
+PASS TC-SAVED-01 repeat removal: {'http': 204, 'expected': 204}
+
+PASS TC-SAVED-01 count returns to zero: owner count=0
+
+PASS TC-SAVED-04 inaccessible level word: {'http': 404, 'expected': 404}
+
+PASS TC-SAVED-04 unknown group: {'http': 404, 'expected': 404}
+
+PASS TC-SAVED-04 existing group without saved words: {'http': 200, 'expected': 200}
+
+PASS TC-SAVED-04 empty existing group count: 0
+
+PASS TC-FSRS-05 type=None: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 type=: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 type=INVALID: {'http': 400, 'expected': 400}
+
+PASS TC-PROFILE-01 rename and A1 to A2: {'http': 200, 'expected': 200}
+
+PASS TC-PROFILE-01 reload persisted profile: {'name': 'API Renamed', 'level': 'A2'}
+
+PASS TC-PROFILE-01 other account unchanged: {'otherName': 'Additional API Test'}
+
+PASS TC-VOCAB-04 same JWT new catalog: {'http': 200, 'expected': 200}
+
+PASS TC-VOCAB-04 three A2 decks: 3
+
+PASS TC-VOCAB-04 old A1 deck denied: {'http': 404, 'expected': 404}
+
+PASS TC-VOCAB-02 unknown deck: {'http': 404, 'expected': 404}
+
+PASS TC-VOCAB-02 switch B1: {'http': 200, 'expected': 200}
+
+PASS TC-VOCAB-02 empty B1 catalog: {'http': 200, 'expected': 200}
+
+PASS TC-VOCAB-02 B1 is empty: []
+
+PASS TC-VOCAB-02 published empty deck: {'http': 200, 'expected': 200}
+
+PASS TC-VOCAB-02 empty words: []
+
+PASS TC-VOCAB-02 hidden deck: {'http': 404, 'expected': 404}
+
+PASS TC-FSRS-05 study fixture: {'http': 200, 'expected': 200}
+
+PASS TC-FSRS-05 rating=None: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 rating=good: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 wordId=None: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 wordId=bad-uuid: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 clientRequestToken=None: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 clientRequestToken=bad-uuid: {'http': 400, 'expected': 400}
+
+PASS TC-FSRS-05 cross-account session read: {'http': 404, 'expected': 404}
+
+PASS TC-FSRS-05 cross-account rating: {'http': 404, 'expected': 404}
+
+PASS TC-FSRS-05 no log after invalid requests: 0 logs
+
+PASS TC-FSRS-02 population=0: {'dueCount': 0, 'targetCount': 0}
+
+PASS TC-FSRS-02 population=1: {'dueCount': 1, 'targetCount': 1}
+
+PASS TC-FSRS-02 population=9: {'dueCount': 9, 'targetCount': 9}
+
+PASS TC-FSRS-02 population=10: {'dueCount': 10, 'targetCount': 10}
+
+PASS TC-FSRS-02 population=11: {'dueCount': 11, 'targetCount': 10}

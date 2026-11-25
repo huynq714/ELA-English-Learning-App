@@ -1,0 +1,1 @@
+PASS Review UI persisted the original rating token across reload and used it on retry

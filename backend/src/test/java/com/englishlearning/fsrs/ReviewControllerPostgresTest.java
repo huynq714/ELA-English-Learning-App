@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@SpringBootTest(properties = "ela.auth.token-ttl=PT1H")
+@SpringBootTest(properties = {"ela.auth.token-ttl=PT1H", "ela.web.allowed-origins=http://localhost:58126"})
 @EnabledIfEnvironmentVariable(named = "FSRS_TEST_JDBC_URL",
         matches = "jdbc:postgresql://[^/]+/english_learning_fsrs_test(?:\\?.*)?")
 class ReviewControllerPostgresTest {
@@ -58,6 +58,20 @@ class ReviewControllerPostgresTest {
         users.forEach(id -> jdbc.update("DELETE FROM users WHERE id = ?", id));
         decks.forEach(id -> jdbc.update("DELETE FROM decks WHERE id = ?", id));
         words.forEach(id -> jdbc.update("DELETE FROM words WHERE id = ?", id));
+    }
+
+    @Test
+    void corsAllowsOnlyConfiguredOriginWithoutBypassingAuthentication() throws Exception {
+        mvc.perform(options("/api/v1/auth/login").header("Origin", "http://localhost:58126")
+                .header("Access-Control-Request-Method", "POST")
+                .header("Access-Control-Request-Headers", "content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:58126"));
+        mvc.perform(options("/api/v1/auth/login").header("Origin", "https://untrusted.example")
+                .header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get(REVIEW + "/summary").header("Origin", "http://localhost:58126"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

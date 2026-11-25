@@ -76,7 +76,8 @@ try {
         -f database/week4/migrations/V1_4__topic_deck_catalog.sql `
         -f database/week4/import/data/apply_topic_decks.sql `
         -f database/week4/migrations/V1_5__password_reset.sql `
-        -f database/week5/migrations/V1_6__user_saved_words.sql
+        -f database/week5/migrations/V1_6__user_saved_words.sql `
+        -f database/week5/migrations/V1_7__fsrs_persistence.sql
     if ($LASTEXITCODE) { throw 'Isolated PostgreSQL setup failed' }
 
     $snapshotSql = 'SELECT md5(string_agg(to_jsonb(w)::text, '''' ORDER BY w.id)) FROM words w;'

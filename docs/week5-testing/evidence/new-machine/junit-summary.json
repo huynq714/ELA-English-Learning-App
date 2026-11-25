@@ -1,0 +1,600 @@
+{
+  "totals": {
+    "tests": 94,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "com.englishlearning.auth.AuthServiceTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "2.478",
+      "testcases": [
+        {
+          "name": "disabledAccountCannotLoginOrUseAnExistingIdentity",
+          "class": "com.englishlearning.auth.AuthServiceTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.fsrs.FsrsEngineTest",
+      "tests": "31",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.35",
+      "testcases": [
+        {
+          "name": "everyRatingHasExpectedStateTransition",
+          "class": "com.englishlearning.fsrs.FsrsEngineTest",
+          "status": "PASS"
+        },
+        {
+          "name": "sameDayReviewStability",
+          "class": "5. Same-Day Reviews & Edge Cases",
+          "status": "PASS"
+        },
+        {
+          "name": "difficultyClamping",
+          "class": "5. Same-Day Reviews & Edge Cases",
+          "status": "PASS"
+        },
+        {
+          "name": "negativeElapsedDaysSafety",
+          "class": "5. Same-Day Reviews & Edge Cases",
+          "status": "PASS"
+        },
+        {
+          "name": "maximumIntervalCapped",
+          "class": "5. Same-Day Reviews & Edge Cases",
+          "status": "PASS"
+        },
+        {
+          "name": "referenceForgetCalculation",
+          "class": "8. Mathematical Reference Verification (FSRS-4.5 Specification)",
+          "status": "PASS"
+        },
+        {
+          "name": "referenceRecallCalculation",
+          "class": "8. Mathematical Reference Verification (FSRS-4.5 Specification)",
+          "status": "PASS"
+        },
+        {
+          "name": "scheduleNewCardHardUsesStepMidpoint",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "scheduleNewCardEasy",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "scheduleNewCardGood",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "scheduleNewCardAgain",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "initialStabilityMatchesWeights",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "initialDifficultyMatchesFormula",
+          "class": "1. New Card & Initial Memory States (S0 & D0)",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidWeightsRejected",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "parametersAreFiniteAndImmutable",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "nullInputsRejected",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidRetentionRejected",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "stabilityAndIntervalBounds",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidCardMemoryStateRejected",
+          "class": "7. Input Validation & Error Handling",
+          "status": "PASS"
+        },
+        {
+          "name": "deterministicExecution",
+          "class": "6. Preview & Determinism",
+          "status": "PASS"
+        },
+        {
+          "name": "previewAllRatings",
+          "class": "6. Preview & Determinism",
+          "status": "PASS"
+        },
+        {
+          "name": "relearningCardReGraduation",
+          "class": "4. Lapses & Forgetting in REVIEW State",
+          "status": "PASS"
+        },
+        {
+          "name": "repeatedAgainInRelearningDoesNotAddLapses",
+          "class": "4. Lapses & Forgetting in REVIEW State",
+          "status": "PASS"
+        },
+        {
+          "name": "reviewCardLapse",
+          "class": "4. Lapses & Forgetting in REVIEW State",
+          "status": "PASS"
+        },
+        {
+          "name": "hardRepeatsAndGoodAdvancesRelearningSteps",
+          "class": "4. Lapses & Forgetting in REVIEW State",
+          "status": "PASS"
+        },
+        {
+          "name": "graduateThroughLearningSteps",
+          "class": "2. Learning & Relearning Step Progression",
+          "status": "PASS"
+        },
+        {
+          "name": "hardInLearningRepeatsCurrentStep",
+          "class": "2. Learning & Relearning Step Progression",
+          "status": "PASS"
+        },
+        {
+          "name": "againInLearningResetsStep",
+          "class": "2. Learning & Relearning Step Progression",
+          "status": "PASS"
+        },
+        {
+          "name": "earlyReview",
+          "class": "3. Review State Scheduling: On-time, Early, Overdue",
+          "status": "PASS"
+        },
+        {
+          "name": "onTimeReview",
+          "class": "3. Review State Scheduling: On-time, Early, Overdue",
+          "status": "PASS"
+        },
+        {
+          "name": "overdueReview",
+          "class": "3. Review State Scheduling: On-time, Early, Overdue",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+      "tests": "16",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "19.572",
+      "testcases": [
+        {
+          "name": "reviewHistoryTriggersRejectDirectDeletion",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "summaryCountsUninitializedStudyProgressOnceAndExcludesBookmarks",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "concurrentStartsForSameUserResumeOneActiveSession",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "cardLearningStepRoundTripsAndDueCardsAreScopedToOwner",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "concurrentSameTokenCreatesOnlyOnePersistedResult",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "serviceRatingPersistsLearningStepReplaysTokenAndCompletesOnlyAfterGraduation",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "serviceRollbackLeavesCardLogItemAndTokenUnchanged",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "streakIsIdempotentPerDateAndRestartsAfterMissedDay",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "sessionCanResumeAndAgainMovesTheItemToQueueTail",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "transactionRollbackRestoresCardLogItemAndIdempotencyTogether",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "serviceRejectsAnotherUsersSessionAndWordOutsideSession",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "serviceCreatesDueSessionFromStudiedWordsAndResumesPersistedQueue",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "concurrentServiceRatingWithSameTokenWritesOneLogAndOneStateChange",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "sessionItemsAreUniqueAndOwnershipScoped",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "cramAllowsEarlyFirstRatingButWaitsForRelearningAfterResume",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "idempotencyReservationAndPersistedResponseAreBoundToRequest",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryPostgresTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.fsrs.FsrsRepositoryTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.391",
+      "testcases": [
+        {
+          "name": "mapsLearningStepAndCompleteCardState",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryTest",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidRepositoryInputFailsBeforeDatabaseAccess",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryTest",
+          "status": "PASS"
+        },
+        {
+          "name": "legacyReviewLogDoesNotInventFieldsAbsentBeforeV17",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryTest",
+          "status": "PASS"
+        },
+        {
+          "name": "idempotencyRecordDefensivelyCopiesRequestHashAndBindsTheWholeRequest",
+          "class": "com.englishlearning.fsrs.FsrsRepositoryTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.fsrs.FsrsServiceTest",
+      "tests": "15",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.244",
+      "testcases": [
+        {
+          "name": "completedDUEItemUpdatesStreakInVietnameseLocalDateAndCompletesAtomically",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "cramSelectsOnlyRepositoryEligibleStudiedCardsAndCapsAtTen",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "tooEarlyRatingIsRejectedBeforeCardOrLogWrite",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "rejectsNonOwnedSessionBeforeTokenReservation",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "againRequeuesTheCardAtTailAndIncrementsAgainCountWithoutCompletingIt",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "goodOnUnfinishedLearningCardKeepsItemPendingAndReportsWait",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "dueSessionUsesAllAvailableWhenBetweenOneAndNine",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "rejectsRatingWhenAnotherDueItemIsFirstInQueue",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "tokenReusedWithAnotherRatingConflicts",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "noDueCardsReturnsEmptyAndDoesNotCreateEmptySession",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "existingSessionIsResumedBeforeCreatingAnother",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "currentStreakDisplaysZeroAfterAFullMissedDayWithoutChangingStoredStreak",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "dueSessionSelectsAtMostTenOldestEligibleCards",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "cramWithNoPreviouslyStudiedWordsReturnsEmptyWithoutCreatingSession",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "retryWithSameTokenReplaysStoredResultWithoutSecondScheduling",
+          "class": "com.englishlearning.fsrs.FsrsServiceTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.fsrs.ReviewControllerPostgresTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "10.495",
+      "testcases": [
+        {
+          "name": "jwtValidationOwnershipAndRatingValidation",
+          "class": "com.englishlearning.fsrs.ReviewControllerPostgresTest",
+          "status": "PASS"
+        },
+        {
+          "name": "dueWaitResumeReplayCompleteAndCramWithoutExtraStreak",
+          "class": "com.englishlearning.fsrs.ReviewControllerPostgresTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.health.HealthControllerTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.032",
+      "testcases": [
+        {
+          "name": "returnsUpWithoutExposingConfiguration",
+          "class": "com.englishlearning.health.HealthControllerTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.profile.ProfileDevControllerTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.23",
+      "testcases": [
+        {
+          "name": "validPutReturnsProfileDtoAndDoesNotExposeSensitiveFields",
+          "class": "com.englishlearning.profile.ProfileDevControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "controllerIsNotRegisteredWithoutLocalProfile",
+          "class": "com.englishlearning.profile.ProfileDevControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "getAndPatchReturnProfileAndMissingProfileReturns404",
+          "class": "com.englishlearning.profile.ProfileDevControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidLevelAndGoalReturn400",
+          "class": "com.englishlearning.profile.ProfileDevControllerTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.profile.ProfileServiceTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.033",
+      "testcases": [
+        {
+          "name": "patchChangesDailyGoalAndKeepsOtherValues",
+          "class": "com.englishlearning.profile.ProfileServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "patchInitializesMissingProfileFromSchemaDefaults",
+          "class": "com.englishlearning.profile.ProfileServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "missingUserCannotGetProfileCreated",
+          "class": "com.englishlearning.profile.ProfileServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "putCreatesProfileForExistingUser",
+          "class": "com.englishlearning.profile.ProfileServiceTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.vocabulary.DeckControllerTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.483",
+      "testcases": [
+        {
+          "name": "hiddenOrMissingPublicDeckReturns404",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "devWriteControllerIsAbsentUnlessLocalProfileIsActive",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "validPatchReturns200AndDeleteReturns204",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "missingOrHiddenDeckWordsReturn404",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "listsWordsForPublishedDeckAsSourceAttributedDtos",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidCreateReturns400",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "validCreateReturns201AndLocation",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "invalidPatchReturns400",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "listsPublishedDecksAsDtos",
+          "class": "com.englishlearning.vocabulary.DeckControllerTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.vocabulary.DeckWordsServiceTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.406",
+      "testcases": [
+        {
+          "name": "publishedDeckWithNoWordsReturnsEmptyList",
+          "class": "com.englishlearning.vocabulary.DeckWordsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "mapsPublishedDeckWordsToDtosWithoutRequiringVietnameseTranslation",
+          "class": "com.englishlearning.vocabulary.DeckWordsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "missingProfileRequiresLevelSelection",
+          "class": "com.englishlearning.vocabulary.DeckWordsServiceTest",
+          "status": "PASS"
+        },
+        {
+          "name": "missingHiddenOrOtherLevelDeckIsNotQueriedForWords",
+          "class": "com.englishlearning.vocabulary.DeckWordsServiceTest",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "com.englishlearning.vocabulary.MyVocabularyControllerTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.132",
+      "testcases": [
+        {
+          "name": "returnsNotFoundForUnknownOrUnsupportedGroup",
+          "class": "com.englishlearning.vocabulary.MyVocabularyControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "groupListIncludesDatabaseDescriptionAndCount",
+          "class": "com.englishlearning.vocabulary.MyVocabularyControllerTest",
+          "status": "PASS"
+        },
+        {
+          "name": "returnsGroupMetadataAndOnlyTheAuthenticatedUsersSavedCount",
+          "class": "com.englishlearning.vocabulary.MyVocabularyControllerTest",
+          "status": "PASS"
+        }
+      ]
+    }
+  ]
+}

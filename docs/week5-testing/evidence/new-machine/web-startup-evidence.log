@@ -1,0 +1,8 @@
+Fixture registered
+Real database endpoints verified
+Preflight response recorded
+Browser launched
+Login screen rendered
+PASS real API registration, decks, summary and Web Login -> Home
+OBSERVED cross-origin OPTIONS: 401, allow-origin=null
+OBSERVED My Vocabulary HTTP 500 and visible load error (PostgreSQL 17)

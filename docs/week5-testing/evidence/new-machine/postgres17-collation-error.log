@@ -1,0 +1,11 @@
+2026-11-25T20:04:07.631+07:00  WARN 6020 --- [english-learning-api] [.1-58165-exec-4] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 42704
+2026-11-25T20:04:07.633+07:00  WARN 6020 --- [english-learning-api] [.1-58165-exec-4] org.hibernate.orm.jdbc.error             : ERROR: collation "pg_catalog.pg_unicode_fast" for encoding "UTF8" does not exist
+  Position: 307
+2026-11-25T20:04:07.651+07:00 ERROR 6020 --- [english-learning-api] [.1-58165-exec-4] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.dao.InvalidDataAccessResourceUsageException: JDBC exception executing SQL [ERROR: collation "pg_catalog.pg_unicode_fast" for encoding "UTF8" does not exist
+  Position: 307] [SELECT w.* FROM user_saved_words saved JOIN words w ON w.id = saved.word_id
+  AND (strpos(lower(w.headword COLLATE pg_catalog.pg_unicode_fast), lower(? COLLATE pg_catalog.pg_unicode_fast)) > 0
+    OR strpos(lower(w.meaning_vi COLLATE pg_catalog.pg_unicode_fast), lower(? COLLATE pg_catalog.pg_unicode_fast)) > 0)
+  AND (strpos(lower(w.headword COLLATE pg_catalog.pg_unicode_fast), lower(? COLLATE pg_catalog.pg_unicode_fast)) > 0
+    OR strpos(lower(w.meaning_vi COLLATE pg_catalog.pg_unicode_fast), lower(? COLLATE pg_catalog.pg_unicode_fast)) > 0)
+org.postgresql.util.PSQLException: ERROR: collation "pg_catalog.pg_unicode_fast" for encoding "UTF8" does not exist
+  Position: 307

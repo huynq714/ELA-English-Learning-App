@@ -1,0 +1,17 @@
+{
+  "additional-api": 0,
+  "database-tests": 0,
+  "import-builder-final": 0,
+  "lint-final": 0,
+  "maven-confirm": 1,
+  "maven-limited": 0,
+  "quiz-web-final": 0,
+  "review-web-final": 0,
+  "saved-web-final": 1,
+  "suite-Auth-retry": 0,
+  "suite-MyVocabulary-retry": 1,
+  "typecheck-final": 0,
+  "web-startup-evidence": 0,
+  "web-startup-final": 0,
+  "web-startup-retry": -1
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "file": "cors-after.json",
+    "bytes": 457,
+    "sha256": "4ddddfdea1256e822dfa180cdf33de0c3677fad7176aefa01e58d13bfa423f7c"
+  },
+  {
+    "file": "cors-verified.log",
+    "bytes": 92,
+    "sha256": "c50ace9ddbac8772fc461267ae7b725a4924cf471bc161994df6452d19c57fc4"
+  },
+  {
+    "file": "flashcard.png",
+    "bytes": 25146,
+    "sha256": "5673a66875c35881e509bf35e2d4c819f140f312192fcd4004a4d1f96d5c88ce"
+  },
+  {
+    "file": "junit-regression.json",
+    "bytes": 70,
+    "sha256": "3b951323d45286a493dd5787fde277bb83d61ec0940d54d19b9884654f227243"
+  },
+  {
+    "file": "profile-320.png",
+    "bytes": 32789,
+    "sha256": "f6a28c97d701760b4de64b5ca586e506155dd47ae56074817a09f210ce45a1f1"
+  },
+  {
+    "file": "profile-390.png",
+    "bytes": 38483,
+    "sha256": "561a584fd8a42457bcf29f17f6609c00a560f3a4986533997bf6c38eec97e055"
+  },
+  {
+    "file": "profile-430.png",
+    "bytes": 38903,
+    "sha256": "a0b6c96a39c4f3fc570c3c2a45f081097810ef8a64fbb87adc2db48eb1775438"
+  },
+  {
+    "file": "regression-lint.log",
+    "bytes": 61,
+    "sha256": "d533fff652a318f16b16354bc666e6dbbb19a6668aa104b605b7770d2e424229"
+  },
+  {
+    "file": "regression-quiz.log",
+    "bytes": 741,
+    "sha256": "652d8945828719f4109cdae3a707348c1418c1a695e2771eecea9bdd8907f00f"
+  },
+  {
+    "file": "regression-tsc.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "regression-verified.log",
+    "bytes": 6203,
+    "sha256": "ad84f4df395f162f622b5bf3315a32083888d29c204b9ec95f9b8862d4adf051"
+  },
+  {
+    "file": "representative-success.log",
+    "bytes": 796,
+    "sha256": "0de4e1227c2310680b145a85acd18377ca3b7d4775245a28c85663eb598e359b"
+  },
+  {
+    "file": "results.json",
+    "bytes": 1365,
+    "sha256": "c7e83260894e5e55d98ec37fd381b5c1d101ade0d4032dde17a87e7f0c3eb4c1"
+  }
+]

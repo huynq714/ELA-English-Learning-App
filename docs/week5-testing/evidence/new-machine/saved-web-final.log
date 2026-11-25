@@ -1,0 +1,10 @@
+locator.waitFor: Timeout 25000ms exceeded.
+Call log:
+  - waiting for getByText(/Chưa có từ đã lưu\. Bấm ngôi sao/) to be visible
+
+    at run (<project-root>\backend\scripts\test-my-vocabulary-web.cjs:72:17) {
+  log: [
+    '  - waiting for getByText(/Chưa có từ đã lưu\\. Bấm ngôi sao/) to be visible'
+  ],
+  name: 'TimeoutError'
+}

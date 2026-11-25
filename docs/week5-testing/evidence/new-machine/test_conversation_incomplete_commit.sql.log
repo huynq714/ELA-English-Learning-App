@@ -1,0 +1,33 @@
+BEGIN
+
+INSERT 0 1
+
+INSERT 0 1
+
+INSERT 0 4
+
+psql.exe : psql:<project-root>/database/week3/test_conversation_incomplete_commit.sql:24: NOTICE:  PASS: CHECK
+
+rejects completed session with fewer than five counted turns
+
+At <project-root>\docs\week5-testing\scripts\run-database-checks.ps1:31 char:9
+
++         & $psql @connection -f (Join-Path $root "database/week3/$file ...
+
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: (psql:D:/ELA-wee...e counted turns:String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+DO
+
+UPDATE 1
+
+psql:<project-root>/database/week3/test_conversation_incomplete_commit.sql:28: ERROR:  Completed conversation
+
+60000000-0000-4000-8000-000000000013 must have at least five USER messages and a matching turn count
+
+CONTEXT:  PL/pgSQL function validate_completed_conversation() line 13 at RAISE

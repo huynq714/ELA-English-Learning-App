@@ -36,15 +36,32 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Arrays;
+import java.util.List;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
     private static final Set<String> LOOPBACK = Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1");
 
     @Bean
-    SecurityFilterChain appSecurity(HttpSecurity http, Environment environment) {
+    SecurityFilterChain appSecurity(HttpSecurity http, Environment environment,
+            @Value("${ela.web.allowed-origins:}") String allowedOrigins) {
         boolean localProfile = environment.acceptsProfiles(Profiles.of("local"));
+        var cors = new CorsConfiguration();
+        cors.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::strip).filter(origin -> !origin.isEmpty()).toList());
+        if (cors.getAllowedOrigins().stream().anyMatch(origin -> origin.contains("*"))) {
+            throw new IllegalArgumentException("CORS origins must be explicit URLs without wildcards");
+        }
+        cors.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
+        cors.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        cors.setAllowCredentials(false);
+        var corsSource = new UrlBasedCorsConfigurationSource();
+        corsSource.registerCorsConfiguration("/api/v1/**", cors);
         return http
+                .cors(config -> config.configurationSource(corsSource))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(AbstractHttpConfigurer::disable)

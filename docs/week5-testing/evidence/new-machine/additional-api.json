@@ -1,0 +1,715 @@
+[
+  {
+    "case": "TC-REG-01",
+    "variant": "A1 catalog",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-REG-01",
+    "variant": "three A1 decks",
+    "status": "PASS",
+    "observed": 3
+  },
+  {
+    "case": "TC-REG-01",
+    "variant": "profile defaults",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-REG-01",
+    "variant": "default goal 15",
+    "status": "PASS",
+    "observed": 15
+  },
+  {
+    "case": "TC-REG-01",
+    "variant": "BCrypt persisted",
+    "status": "PASS",
+    "observed": "BCrypt prefix"
+  },
+  {
+    "case": "TC-AUTH-03",
+    "variant": "blank email",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-AUTH-03",
+    "variant": "blank password",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PASSWORD-06",
+    "variant": "reset token length 0",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PASSWORD-06",
+    "variant": "reset token length 42",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PASSWORD-06",
+    "variant": "reset token length 44",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-AUTH-02",
+    "variant": "unknown user",
+    "status": "PASS",
+    "observed": {
+      "http": 401,
+      "expected": 401
+    }
+  },
+  {
+    "case": "TC-AUTH-02",
+    "variant": "disabled token",
+    "status": "PASS",
+    "observed": {
+      "http": 403,
+      "expected": 403
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=4",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=4",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 15
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=5",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=5",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 5
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=6",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=6",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 6
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=239",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=239",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 239
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=240",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=240",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 240
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=241",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=241",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 240
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "goal=None",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PROFILE-03",
+    "variant": "persist goal=None",
+    "status": "PASS",
+    "observed": {
+      "storedGoal": 240
+    }
+  },
+  {
+    "case": "TC-HOME-01",
+    "variant": "summary bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-HOME-01",
+    "variant": "zero counts bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "learnedCount": 0,
+      "dueCount": 0,
+      "cramCount": 0
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "DUE bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "empty DUE bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "empty": true,
+      "sessionId": null
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "CRAM bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "empty CRAM bookmark=False",
+    "status": "PASS",
+    "observed": {
+      "empty": true,
+      "sessionId": null
+    }
+  },
+  {
+    "case": "TC-HOME-01",
+    "variant": "bookmark only",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-HOME-01",
+    "variant": "summary bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-HOME-01",
+    "variant": "zero counts bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "learnedCount": 0,
+      "dueCount": 0,
+      "cramCount": 0
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "DUE bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "empty DUE bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "empty": true,
+      "sessionId": null
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "CRAM bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "empty CRAM bookmark=True",
+    "status": "PASS",
+    "observed": {
+      "empty": true,
+      "sessionId": null
+    }
+  },
+  {
+    "case": "TC-FSRS-01",
+    "variant": "no fake sessions/logs",
+    "status": "PASS",
+    "observed": "session/log count = 0"
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "repeat add",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "repeat add",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "one saved row",
+    "status": "PASS",
+    "observed": 1
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "other user cannot see bookmark",
+    "status": "PASS",
+    "observed": {
+      "saved": false
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "other user delete no-op",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "owner row retained",
+    "status": "PASS",
+    "observed": "owner count=1"
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "repeat removal",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "repeat removal",
+    "status": "PASS",
+    "observed": {
+      "http": 204,
+      "expected": 204
+    }
+  },
+  {
+    "case": "TC-SAVED-01",
+    "variant": "count returns to zero",
+    "status": "PASS",
+    "observed": "owner count=0"
+  },
+  {
+    "case": "TC-SAVED-04",
+    "variant": "inaccessible level word",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-SAVED-04",
+    "variant": "unknown group",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-SAVED-04",
+    "variant": "existing group without saved words",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-SAVED-04",
+    "variant": "empty existing group count",
+    "status": "PASS",
+    "observed": 0
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "type=None",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "type=",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "type=INVALID",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-PROFILE-01",
+    "variant": "rename and A1 to A2",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-PROFILE-01",
+    "variant": "reload persisted profile",
+    "status": "PASS",
+    "observed": {
+      "name": "API Renamed",
+      "level": "A2"
+    }
+  },
+  {
+    "case": "TC-PROFILE-01",
+    "variant": "other account unchanged",
+    "status": "PASS",
+    "observed": {
+      "otherName": "Additional API Test"
+    }
+  },
+  {
+    "case": "TC-VOCAB-04",
+    "variant": "same JWT new catalog",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-VOCAB-04",
+    "variant": "three A2 decks",
+    "status": "PASS",
+    "observed": 3
+  },
+  {
+    "case": "TC-VOCAB-04",
+    "variant": "old A1 deck denied",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "unknown deck",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "switch B1",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "empty B1 catalog",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "B1 is empty",
+    "status": "PASS",
+    "observed": []
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "published empty deck",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "empty words",
+    "status": "PASS",
+    "observed": []
+  },
+  {
+    "case": "TC-VOCAB-02",
+    "variant": "hidden deck",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "study fixture",
+    "status": "PASS",
+    "observed": {
+      "http": 200,
+      "expected": 200
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "rating=None",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "rating=good",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "wordId=None",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "wordId=bad-uuid",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "clientRequestToken=None",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "clientRequestToken=bad-uuid",
+    "status": "PASS",
+    "observed": {
+      "http": 400,
+      "expected": 400
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "cross-account session read",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "cross-account rating",
+    "status": "PASS",
+    "observed": {
+      "http": 404,
+      "expected": 404
+    }
+  },
+  {
+    "case": "TC-FSRS-05",
+    "variant": "no log after invalid requests",
+    "status": "PASS",
+    "observed": "0 logs"
+  },
+  {
+    "case": "TC-FSRS-02",
+    "variant": "population=0",
+    "status": "PASS",
+    "observed": {
+      "dueCount": 0,
+      "targetCount": 0
+    }
+  },
+  {
+    "case": "TC-FSRS-02",
+    "variant": "population=1",
+    "status": "PASS",
+    "observed": {
+      "dueCount": 1,
+      "targetCount": 1
+    }
+  },
+  {
+    "case": "TC-FSRS-02",
+    "variant": "population=9",
+    "status": "PASS",
+    "observed": {
+      "dueCount": 9,
+      "targetCount": 9
+    }
+  },
+  {
+    "case": "TC-FSRS-02",
+    "variant": "population=10",
+    "status": "PASS",
+    "observed": {
+      "dueCount": 10,
+      "targetCount": 10
+    }
+  },
+  {
+    "case": "TC-FSRS-02",
+    "variant": "population=11",
+    "status": "PASS",
+    "observed": {
+      "dueCount": 11,
+      "targetCount": 10
+    }
+  }
+]

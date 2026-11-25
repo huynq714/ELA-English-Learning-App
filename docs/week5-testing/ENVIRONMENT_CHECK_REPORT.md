@@ -1,3 +1,53 @@
+# Báo cáo môi trường tuần 5 — Máy mới
+
+Cập nhật 25/11/2026, Asia/Saigon. Workspace **D:\ELA-week5-testing**. Bộ công cụ hệ thống được tái sử dụng; **không cài phần mềm hệ thống**, không đổi PATH/JAVA_HOME/ANDROID_HOME vĩnh viễn, không sửa Windows service hoặc dữ liệu PostgreSQL có sẵn.
+
+## Hiện trạng xác minh
+
+| Thành phần | Máy mới | Kết quả |
+| --- | --- | --- |
+| Node / npm | 22.19.0 / 10.9.3 tại D:\Git | npm ci theo package-lock, 805 package; không thay lockfile. |
+| JDK | Temurin 21.0.7+6, C:\Program Files\Eclipse Adoptium\jdk-21.0.7.6-hotspot | javac và Maven xác nhận Java 21. |
+| Maven | 3.9.16 tại D:\Downloads\Tools\apache-maven-3.9.16-bin\apache-maven-3.9.16 | Build JAR và 94 tests đạt; 18 tests PostgreSQL bật, 0 skip. |
+| PostgreSQL | 17.11, C:\Program Files\PostgreSQL\17\bin | Binary có sẵn, chưa trên PATH. Cluster riêng khởi tạo/nạp được V1_7; **chưa đủ yêu cầu PG18 cho My Vocabulary**. |
+| Service PostgreSQL có sẵn | postgresql-x64-17 Running, 5432, C:\Program Files\PostgreSQL\17\data | Chỉ kiểm tra service/process; không dùng credentials, không truy vấn hay ghi DB của service này. |
+| Python / Git | 3.10.11 / 2.48.1.windows.1 | Script Auth được điều chỉnh định dạng Instant cho Python 3.10. |
+| Expo | SDK 58.0.22 theo lockfile | CLI local khởi chạy Web; không nâng dependencies. Đã đọc docs SDK 58 và Expo CLI trước thao tác. |
+| Edge / Chrome | Cả hai browser đã tồn tại ở Program Files | Playwright dùng Edge mặc định của script. |
+| Playwright Core | 1.65.1 tại .artifacts/quiz-tools | Tooling cục bộ; không thêm vào package.json hoặc cài browser hệ thống. |
+| Android SDK | %LOCALAPPDATA%\Android\Sdk | Có platform-tools, emulator, image API35; platform đã thấy android-37.0. Không trên PATH. |
+| ADB / Emulator | ADB 37.0.1-15733141 / Emulator 37.1.11 | adb version, adb devices -l và emulator -list-avds chạy qua đường dẫn tuyệt đối; AVD Medium_Phone được liệt kê, chưa mở. |
+| Android cmdline-tools | Chưa tìm thấy sdkmanager tại PATH hoặc SDK/cmdline-tools | Không cài bổ sung. Không có thiết bị trong adb devices -l. |
+
+## Database và kết nối
+
+Cluster **mới** ở .artifacts/week5-environment/pgdata, bind **127.0.0.1:55436**, xác thực SCRAM-SHA-256, database **english_learning_fsrs_test**, UTF8, user **ela_week5**. Đã xác minh data_directory trước tạo/nạp DB. Credentials DB/JWT mới tạo bằng số ngẫu nhiên mật mã, lưu SecureString qua DPAPI trong secrets.clixml; file mật khẩu initdb tạm đã được xóa.
+
+Nạp schema → V1_2 → V1_3 → V1_4 → topic seed → V1_5 → pronunciations → bilingual examples → V1_6 → V1_7. Kết quả **23 bảng, 6 Deck, 90 từ, 90 liên kết**. Đã đối chiếu các bảng/cột, index và constraint của V1_7. Không phát lại V1_7 và không chạy backfill. Xem [database-setup.log](evidence/new-machine/database-setup.log) và [database-final.log](evidence/new-machine/database-final.log).
+
+Backend **127.0.0.1:58125** đã kết nối Hikari/Hibernate validate; health UP, các request JWT đọc profile/catalog/review summary từ DB thật thành công. Web Metro **58126**, proxy **58127**; [Login → Home](evidence/new-machine/web-startup.json) nhận login 200/summary 200, không page error. API URL Web là http://127.0.0.1:58127. Các server chỉ mở loopback; chưa xác nhận LAN/native.
+
+Schema khởi tạo được trên PG17 không chứng minh toàn app tương thích: My Vocabulary dùng pg_catalog.pg_unicode_fast, thiếu trên PG17 và gây HTTP500. Đã lưu lỗi/ảnh theo **ENV-W5-001**, không đổi source hoặc làm giả collation. Cần PG18 trước khi kết luận các ca liên quan. [BUG_REPORT.md](BUG_REPORT.md).
+
+Các suite API dùng cluster riêng tạo ngẫu nhiên, cổng Auth 55446/58135, PasswordReset 55447/58145/SMTP58148, Quiz 55448/58155, MyVocabulary 55449/58165. Dịch vụ suite được dừng trong finally; dữ liệu/log giữ trong .artifacts. Suite legacy nạp Core trước topics nên có **115 words/133 links**, khác fixture seed chuẩn 90/90 của cluster chính. SQL constraint chạy trên **english_learning_test** tạo mới trong cluster 55436; bài âm xác nhận đúng thông báo/exit3 và rollback, không coi mọi lỗi SQL là PASS.
+
+## Điều chỉnh môi trường và giới hạn
+
+- Giữ PostgreSQL17 và dữ liệu hiện có. Yêu cầu xác nhận bổ sung PG18 đã được gửi; chưa có xác nhận thì không cài.
+- C đã có thời điểm 0 byte trống, JVM bị thiếu native memory và Expo ENOSPC. Đã dùng heap/metaspace giới hạn, chạy suite tuần tự, TEMP/TMP trên D, Metro tối đa 2 worker. Không chỉnh pagefile hoặc xóa dữ liệu cá nhân.
+- Các lượt lỗi gốc được giữ; kết quả cuối dùng đúng lượt đã kiểm chứng. Maven cuối exit0: 94/94, không skip; lint/typecheck exit0. [Báo cáo thực thi](TEST_EXECUTION_REPORT.md).
+- CORS OPTIONS login trả401, thiếu allow-origin; proxy cùng origin giúp tiếp tục Web, **không đóng BUG-W5-001**.
+- Gmail thật, thiết bị thật, AVD đang chạy và Expo Go SDK58 chưa kiểm chứng. SMTP loopback đạt không thay bằng chứng giao nhận Gmail.
+- Lệnh mở Metro trực tiếp bằng Start-Process node bị bộ kiểm duyệt tự động từ chối với lý do `blocked by policy`. Đã dùng script npm run web hiện có trong terminal, hoạt động. Không yêu cầu thay chính sách hay quyền hệ thống.
+
+Khởi động lại và việc còn lại: [PROGRESS.md](PROGRESS.md). Công việc hiện có **26 PASS / 6 PARTIAL / 2 BLOCKED / 29 NOT RUN**, không lấy minh chứng cũ làm kết quả máy mới.
+
+---
+
+## Bản ghi máy cũ — chỉ để đối chiếu lịch sử
+
+Nội dung phía dưới được giữ từ commit bàn giao cf018aa. Các phiên bản, đường dẫn, kết luận đã cài và trạng thái 63 NOT RUN ở đây **thuộc máy cũ**, không phải hiện trạng máy mới.
+
 # Báo cáo môi trường tuần 5 — Giai đoạn 3A
 
 Cập nhật 25/11/2026 (Asia/Bangkok). Đã khởi chạy PostgreSQL test, Spring Boot và Expo Web, xác minh giao diện đăng nhập → Trang chủ với API thật. Giai đoạn 3A hoàn thành cho môi trường Web/API. Chuẩn bị native còn các điều kiện bên dưới. 63 test case vẫn NOT RUN.

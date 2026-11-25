@@ -1,0 +1,125 @@
+waiting for server to start.... done
+
+server started
+
+ level |          topic           | verified_words
+
+-------+--------------------------+----------------
+
+ A1    | Giao tiếp và cảm xúc     |             15
+
+ A1    | Vị trí và di chuyển      |             15
+
+ A1    | Thời gian và tần suất    |             15
+
+ A2    | Học tập                  |             15
+
+ A2    | Thành phố và mua sắm     |             15
+
+ A2    | Công việc và nghề nghiệp |             15
+
+(6 rows)
+
+
+
+PASS six decks have bilingual examples on all 90 cards, and reapplying is safe
+
+PASS PostgreSQL pronunciation coverage (scope|with audio|without audio|provenance mismatch): all|4|111|0 topics|2|88|0
+
+PASS health remains public (HTTP 200)
+
+PASS deck list requires JWT (HTTP 401)
+
+PASS invalid email rejected (HTTP 400)
+
+PASS missing registration level rejected (HTTP 400)
+
+PASS invalid registration level rejected (HTTP 400)
+
+PASS missing password confirmation rejected (HTTP 400)
+
+PASS registration password mismatch (HTTP 400)
+
+PASS weak password rejected (HTTP 400)
+
+PASS password byte limit (HTTP 400)
+
+PASS register account A and issue a session (HTTP 201)
+
+PASS new A1 user can read the catalogue (HTTP 200)
+
+PASS register account B at A2 (HTTP 201)
+
+PASS new A2 user can read the A2 catalogue (HTTP 200)
+
+PASS registration token works without login (HTTP 200)
+
+PASS duplicate email is case insensitive (HTTP 409)
+
+PASS wrong password rejected (HTTP 401)
+
+PASS login A (HTTP 200)
+
+PASS login B (HTTP 200)
+
+PASS get current user (HTTP 200)
+
+PASS missing token rejected (HTTP 401)
+
+PASS bad signature rejected (HTTP 401)
+
+PASS expired token rejected (HTTP 401)
+
+PASS missing expiration rejected (HTTP 401)
+
+PASS wrong audience rejected (HTTP 401)
+
+PASS profile created with selected A1 level (HTTP 200)
+
+PASS goal validation (HTTP 400)
+
+PASS level validation (HTTP 400)
+
+PASS cross-account endpoint denied (HTTP 403)
+
+PASS cross-account dev endpoint denied (HTTP 403)
+
+PASS body cannot select another user (HTTP 400)
+
+PASS blank display name rejected (HTTP 400)
+
+PASS invalid JPEG rejected (HTTP 400)
+
+PASS update own profile (HTTP 200)
+
+PASS reload own profile (HTTP 200)
+
+PASS display name visible in current user (HTTP 200)
+
+PASS other profile unchanged (HTTP 200)
+
+PASS password change requires authentication (HTTP 401)
+
+PASS wrong current password rejected (HTTP 400)
+
+PASS new password confirmation required (HTTP 400)
+
+PASS password reuse rejected (HTTP 400)
+
+PASS change password issues a replacement token (HTTP 200)
+
+PASS replacement token keeps profile accessible (HTTP 200)
+
+PASS previous token revoked (HTTP 401)
+
+PASS old password rejected (HTTP 401)
+
+PASS new password accepted (HTTP 200)
+
+PASS concurrent duplicate registration (HTTP 201 and 409)
+
+PASS PostgreSQL persisted BCrypt users|profiles|updated profile with name and avatar|words|links: 3|3|1|115|133
+
+waiting for server to shut down.... done
+
+server stopped

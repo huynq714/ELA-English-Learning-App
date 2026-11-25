@@ -1,0 +1,69 @@
+waiting for server to start.... done
+
+server started
+
+ level |          topic           | verified_words
+
+-------+--------------------------+----------------
+
+ A1    | Giao tiếp và cảm xúc     |             15
+
+ A1    | Vị trí và di chuyển      |             15
+
+ A1    | Thời gian và tần suất    |             15
+
+ A2    | Học tập                  |             15
+
+ A2    | Thành phố và mua sắm     |             15
+
+ A2    | Công việc và nghề nghiệp |             15
+
+(6 rows)
+
+
+
+PASS six decks have bilingual examples on all 90 cards, and reapplying is safe
+
+PASS PostgreSQL pronunciation coverage (scope|with audio|without audio|provenance mismatch): all|4|111|0 topics|2|88|0
+
+PASS register A1 account (HTTP 201)
+
+PASS register A2 account (HTTP 201)
+
+Traceback (most recent call last):
+
+  File "<project-root>\backend\scripts\test_my_vocabulary.py", line 94, in <module>
+
+    main()
+
+  File "<project-root>\backend\scripts\test_my_vocabulary.py", line 39, in main
+
+    assert saved(alice)["total"] == 0
+
+  File "<project-root>\backend\scripts\test_my_vocabulary.py", line 34, in saved
+
+    return expect("load own saved words", "GET", BASE + suffix, 200, access=token)
+
+  File "<project-root>\backend\scripts\test_auth_profile.py", line 48, in expect
+
+    assert response.status == expected, f"{label}: expected {expected}, got {response.status}"
+
+AssertionError: load own saved words: expected 200, got 500
+
+waiting for server to shut down.... done
+
+server stopped
+
+My Vocabulary HTTP/SQL checks failed. See <project-root>\.artifacts\week4-auth-9060d91c679140d39149205a2b12815a
+
+At <project-root>\backend\scripts\test-auth-profile.ps1:163 char:34
+
++ ... EXITCODE) { throw "My Vocabulary HTTP/SQL checks failed. See $isolate ...
+
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : OperationStopped: (My Vocabulary H...149205a2b12815a:String) [], RuntimeException
+
+    + FullyQualifiedErrorId : My Vocabulary HTTP/SQL checks failed. See <project-root>\.artifacts\week4-auth-906
+
+   0d91c679140d39149205a2b12815a

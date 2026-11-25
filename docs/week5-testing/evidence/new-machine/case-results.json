@@ -1,0 +1,268 @@
+{
+  "TC-REG-01": {
+    "status": "PASS",
+    "actual": "A1/A2 đăng ký 201, mỗi cấp 3 Deck; profile mặc định 15 phút; SQL xác nhận BCrypt và profile.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log",
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-REG-02": {
+    "status": "PASS",
+    "actual": "Email trùng khác hoa thường trả 409; hai đăng ký đồng thời cho 201/409; SQL cuối suite có đúng một user của lượt cạnh tranh.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log"
+    ]
+  },
+  "TC-AUTH-01": {
+    "status": "PASS",
+    "actual": "Email hoa thường đăng nhập 200; JWT đọc đúng /users/me.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log"
+    ]
+  },
+  "TC-AUTH-02": {
+    "status": "PASS",
+    "actual": "Sai mật khẩu/user không tồn tại trả 401; JUnit xác nhận DISABLED không login; API token user DISABLED trả 403.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log",
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-AUTH-03": {
+    "status": "PASS",
+    "actual": "Login rỗng email/password riêng từng trường trả 400; JWT hết hạn trả 401.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log",
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-PASSWORD-02": {
+    "status": "PASS",
+    "actual": "SMTP loopback: email chưa đăng ký nhận cùng 202/body với user có thật và không nhận mail.",
+    "evidence": [
+      "evidence/new-machine/suite-PasswordReset.log"
+    ]
+  },
+  "TC-PASSWORD-04": {
+    "status": "PARTIAL",
+    "actual": "Đã chạy 5 lần OTP sai, failed_attempts=5; mã đúng sau đó bị từ chối; OTP hết hạn và OTP mới hợp lệ đã kiểm tra. Chưa kiểm riêng mã đúng sau 4 lần sai và sát mốc 5 phút.",
+    "evidence": [
+      "evidence/new-machine/suite-PasswordReset.log"
+    ]
+  },
+  "TC-PASSWORD-05": {
+    "status": "PARTIAL",
+    "actual": "Resend trong cooldown không gửi mail; hết cooldown gửi được; giới hạn email 5/6 và send-IP đạt. Chưa kiểm verify email lượt 30/31 hoặc UI chặn resend trước 60s.",
+    "evidence": [
+      "evidence/new-machine/suite-PasswordReset.log"
+    ]
+  },
+  "TC-PASSWORD-06": {
+    "status": "PASS",
+    "actual": "Token độ dài 0/42/44 trả 400; token hợp lệ đổi được trước hạn; token hết hạn bị từ chối; hai reset đồng thời chỉ một 204, lượt còn lại 400 INVALID_RESET_TOKEN.",
+    "evidence": [
+      "evidence/new-machine/suite-PasswordReset.log",
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-PASSWORD-07": {
+    "status": "PASS",
+    "actual": "Đổi mật khẩu 200 cấp JWT thay thế; JWT mới đọc profile; JWT/mật khẩu cũ bị từ chối, mật khẩu mới login được.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log"
+    ]
+  },
+  "TC-PASSWORD-08": {
+    "status": "PARTIAL",
+    "actual": "Đã kiểm currentPassword sai, mật khẩu mới trùng cũ, xác nhận lệch; reset sai xác nhận/thiếu chữ số bị 400. Chưa chạy toàn bộ trường rỗng riêng biệt ở cả PATCH và reset.",
+    "evidence": [
+      "evidence/new-machine/suite-Auth-retry.log",
+      "evidence/new-machine/suite-PasswordReset.log"
+    ]
+  },
+  "TC-PROFILE-01": {
+    "status": "PASS",
+    "actual": "PATCH tên và A1 sang A2; GET lưu đúng, cùng JWT nhận 3 Deck A2; tài khoản B giữ nguyên tên/profile. Phạm vi API/SQL, không chứng nhận native.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/suite-Auth-retry.log"
+    ]
+  },
+  "TC-PROFILE-03": {
+    "status": "PASS",
+    "actual": "4/241/null trả 400; 5/6/239/240 trả 200 và GET lưu đúng; tên/level giữ nguyên.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-HOME-01": {
+    "status": "PARTIAL",
+    "actual": "API user mới và chỉ bookmark đều learnedCount/dueCount/cramCount=0, không phiên/log giả. Web Home user mới đã chụp số 0; chưa quan sát Home sau bookmark.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/web-startup.json",
+      "evidence/new-machine/web-home.png"
+    ]
+  },
+  "TC-VOCAB-02": {
+    "status": "PASS",
+    "actual": "B1 catalog []; Deck A1 có topic, published và rỗng trả []; UUID lạ/Deck ẩn/Deck khác level trả 404. Fixture thiếu topic của lượt đầu đã được sửa trong script test, không sửa app.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-VOCAB-04": {
+    "status": "PASS",
+    "actual": "Giữ cùng JWT, PATCH A1 sang A2; catalog thành 3 Deck A2; URL words của Deck A1 cũ trả 404.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-FLASH-01": {
+    "status": "PASS",
+    "actual": "Web 390x844: mặt trước headword/IPA, ẩn nghĩa và dịch; mặt sau có nghĩa/dịch; lật lại và đổi thẻ về mặt trước; duyệt hết 15 thẻ, Again về cuối. Chưa chứng nhận native.",
+    "evidence": [
+      "evidence/new-machine/quiz-web-final.log",
+      "evidence/new-machine/flashcard-front-web.png",
+      "evidence/new-machine/flashcard-back-web.png"
+    ]
+  },
+  "TC-FLASH-02": {
+    "status": "PARTIAL",
+    "actual": "Web xác nhận Again về cuối; Good ghi study-progress và mở Quiz sau học đủ; API kiểm resume. Chưa gọi riêng Hard và Easy hoặc mở lại luồng thẻ để kiểm thứ tự từ còn lại.",
+    "evidence": [
+      "evidence/new-machine/suite-Quiz.log",
+      "evidence/new-machine/quiz-web-final.log"
+    ]
+  },
+  "TC-QUIZ-01": {
+    "status": "PASS",
+    "actual": "Chưa học/1 thẻ bị STUDY_REQUIRED; học đủ sinh 5 câu x 4 phương án riêng, không lộ đáp án đúng; kiểm snapshot SQL.",
+    "evidence": [
+      "evidence/new-machine/suite-Quiz.log"
+    ]
+  },
+  "TC-QUIZ-03": {
+    "status": "PASS",
+    "actual": "0/2/3/5 câu đúng cho 0/40/60/100%, 2 FAIL và 3 PASS. SQL âm thiếu đáp án/điểm lệch đều bị từ chối ở COMMIT, psql exit 3 và rollback fixture.",
+    "evidence": [
+      "evidence/new-machine/suite-Quiz.log",
+      "evidence/new-machine/database-tests.log",
+      "evidence/new-machine/test_quiz_missing_answer_commit.sql.log",
+      "evidence/new-machine/test_quiz_score_mismatch_commit.sql.log"
+    ]
+  },
+  "TC-QUIZ-04": {
+    "status": "PASS",
+    "actual": "Đề và đáp án đã chấm còn sau restart backend; gửi lại lựa chọn khác giữ câu đầu; submit lặp trả kết quả cũ. 4 bài completed/20 đáp án, 1 đáp án bài đang làm.",
+    "evidence": [
+      "evidence/new-machine/suite-Quiz.log",
+      "evidence/new-machine/quiz-web-final.log"
+    ]
+  },
+  "TC-QUIZ-05": {
+    "status": "PASS",
+    "actual": "FAIL chặn thi lại; ôn 4/5 từ vẫn chặn, đủ 5 mới mở; user B không đọc/nộp/chấm attempt A.",
+    "evidence": [
+      "evidence/new-machine/suite-Quiz.log",
+      "evidence/new-machine/quiz-web-final.log"
+    ]
+  },
+  "TC-SAVED-01": {
+    "status": "PASS",
+    "actual": "POST/DELETE lặp đều 204; SQL chỉ một hàng; user B saved=false và DELETE không xóa của A; count A trở về 0.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-SAVED-02": {
+    "status": "BLOCKED",
+    "actual": "PostgreSQL 17: GET danh sách/nhóm trả 500, SQLSTATE 42704 thiếu pg_catalog.pg_unicode_fast; chưa thể kiểm search/nhóm/giữ từ sau đổi level trên môi trường yêu cầu PG18.",
+    "evidence": [
+      "evidence/new-machine/suite-MyVocabulary-retry.log",
+      "evidence/new-machine/postgres17-collation-error.log",
+      "evidence/new-machine/saved-vocabulary-postgres17.png"
+    ]
+  },
+  "TC-SAVED-04": {
+    "status": "PASS",
+    "actual": "Lưu từ khác level chưa từng lưu trả 404; UUID group lạ 404; group có thật chưa có từ user lưu trả 200 wordCount=0.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json"
+    ]
+  },
+  "TC-SAVED-05": {
+    "status": "BLOCKED",
+    "actual": "Không tải được bộ từ đã lưu trên PostgreSQL 17 nên chưa vào saved-flashcards; không kết luận Quiz/FSRS/streak bất biến sau học. Web script còn locator cũ cần rà sau khi gỡ ENV-W5-001.",
+    "evidence": [
+      "evidence/new-machine/suite-MyVocabulary-retry.log",
+      "evidence/new-machine/saved-web-final.log",
+      "evidence/new-machine/postgres17-collation-error.log"
+    ]
+  },
+  "TC-FSRS-01": {
+    "status": "PASS",
+    "actual": "User mới và chỉ bookmark: DUE/CRAM empty=true, sessionId=null; count phiên/log=0; JUnit và API thật cùng xác nhận.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-FSRS-02": {
+    "status": "PARTIAL",
+    "actual": "API/DB thật đã chạy quần thể 0/1/9/10/11: target 0/1/9/10/10, summary giữ toàn bộ. JUnit kiểm lịch và chờ; chưa kiểm đủ dueAt trước/bằng/sau cùng một Clock cố định.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-FSRS-03": {
+    "status": "PASS",
+    "actual": "31 bài Engine, Service và PostgreSQL kiểm state/step, rating, Again xếp cuối, CARD_NOT_DUE, chờ/resume; Web lật và rate/retry hoạt động.",
+    "evidence": [
+      "evidence/new-machine/junit-summary.json",
+      "evidence/new-machine/review-web-final.log"
+    ]
+  },
+  "TC-FSRS-04": {
+    "status": "PASS",
+    "actual": "JUnit xác nhận ngày Asia/Ho_Chi_Minh, DUE cùng ngày không tăng lại; ngày kế tăng, bỏ ngày reset; CRAM không tăng streak.",
+    "evidence": [
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-FSRS-05": {
+    "status": "PASS",
+    "actual": "Start null/rỗng/INVALID trả 400; rate null/good và word/token null/sai UUID trả 400; user khác đọc/rate 404, không ghi log.",
+    "evidence": [
+      "evidence/new-machine/additional-api.json",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-FSRS-06": {
+    "status": "PASS",
+    "actual": "PostgreSQL tích hợp: cùng token đồng thời một log/một đổi lịch; replay kết quả cũ, đổi rating conflict; rollback card/item/token/log; cả 18 bài tích hợp đạt.",
+    "evidence": [
+      "evidence/new-machine/junit-summary.json"
+    ]
+  },
+  "TC-NET-04": {
+    "status": "PASS",
+    "actual": "Playwright cho server commit rồi abort response submit; retry giữ nguyên body/attempt, nhận kết quả cũ; SQL suite kiểm mỗi bài completed đúng 5 đáp án. Phạm vi Web/API.",
+    "evidence": [
+      "evidence/new-machine/quiz-web-final.log",
+      "evidence/new-machine/suite-Quiz.log"
+    ]
+  },
+  "TC-NET-05": {
+    "status": "PASS",
+    "actual": "Web API giả lập mất phản hồi: mở lại luồng và retry giữ token/body gốc, requests=2; JUnit PostgreSQL thật xác nhận một log. Không thay thế kiểm mobile.",
+    "evidence": [
+      "evidence/new-machine/review-web-final.log",
+      "evidence/new-machine/junit-summary.json"
+    ]
+  }
+}

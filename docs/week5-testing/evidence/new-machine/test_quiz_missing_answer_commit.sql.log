@@ -1,0 +1,27 @@
+BEGIN
+
+INSERT 0 1
+
+INSERT 0 1
+
+INSERT 0 4
+
+UPDATE 1
+
+psql.exe : psql:<project-root>/database/week3/test_quiz_missing_answer_commit.sql:15: ERROR:  Completed quiz
+
+40000000-0000-4000-8000-000000000012 must have five answers and a matching score (answers 4, score 3, correct 3)
+
+At <project-root>\docs\week5-testing\scripts\run-database-checks.ps1:31 char:9
+
++         & $psql @connection -f (Join-Path $root "database/week3/$file ...
+
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: (psql:D:/ELA-wee...e 3, correct 3):String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+CONTEXT:  PL/pgSQL function validate_completed_quiz() line 14 at RAISE

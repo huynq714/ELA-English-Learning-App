@@ -1,68 +1,75 @@
 # Tiến độ tuần 5 — English Learning App
 
-Cập nhật 25/11/2026 (Asia/Bangkok). Công việc kiểm thử đang tạm dừng theo yêu cầu người dùng. Nhánh bàn giao là `feat/week5-testing`, xuất phát từ `origin/master` tại `034f392a7ac7dd5a9213a9a05da1b18475e99fcd`.
+## Kết thúc phạm vi đại diện 3C–5 (25/11/2026)
 
-| Giai đoạn | Trạng thái | Kết quả |
+Kết quả CSV hiện tại: **26 PASS, 0 FAIL, 14 PARTIAL, 2 BLOCKED, 21 NOT RUN**. Đã chọn 9 ca chưa hoàn tất cho Web: AUTH-04, HOME-01/03, UI-03/04/05, NET-01/02, FLASH-04. Log/JSON ghi chính xác phần chạy được; chỉ tăng lên PARTIAL, không đổi thành PASS native. Quiz/Flashcard được chạy lại bằng smoke script sẵn có để hồi quy.
+
+Native: adb không có thiết bị; có AVD nhưng không mở trong phạm vi tài nguyên/hạn mức hạn chế. WHPX usable không chứng nhận app native. Xem MANUAL_TEST_GUIDE.md. Không cài hoặc nâng công cụ.
+
+BUG-W5-001 đã sửa bằng CORS allowlist cấu hình rõ ràng, mặc định rỗng; từ chối wildcard, không gửi cookie credentials. Runtime local khai báo 3 origin loopback. Trước: OPTIONS401; sau: origin cho phép200, origin lạ/giả mạo403, endpoint thiếu JWT401, trình duyệt đọc được phản hồi API khác origin. Đây là lỗi cấu hình tích hợp trong ứng dụng; không phải lỗi mạng máy tính. Xem evidence/representative/cors-after.json.
+
+Maven cuối package SUCCESS, **95/95 tests, 0 skip** (thêm một bài CORS; 19 bài tích hợp), lint/typecheck đạt. Quiz Web regression exit0. Lượt package đầu bị khóa JAR do backend đang chạy; đã dừng đúng backend test trước build lại. Các lần sửa locator/khởi động quá sớm của script 3C không tính PASS; log gốc nằm .artifacts. Không phát hiện thêm lỗi ứng dụng đã xác nhận trong phạm vi đại diện.
+
+Tổng ghi nhận: 1 lỗi ứng dụng đã sửa trong lượt này, 2 vấn đề môi trường, 2 vấn đề script (1 đã sửa từ 3B, 1 còn mở). Không tính chúng thành 5 lỗi nghiệp vụ. Không nâng PG17, không sửa My Vocabulary để né blocker.
+
+Các đoạn phía trên mô tả lượt 3B trước sửa (94 tests/CORS OPEN/26 PASS); mục này và CSV là trạng thái mới nhất. Hồ sơ báo cáo đủ 5 mục theo phạm vi giới hạn, không đồng nghĩa hoàn tất mọi test hay nghiệm thu native. Thực hiện commit/push đúng feat/week5-testing theo yêu cầu hiện tại.
+
+
+## Lịch sử 3B trước lượt sửa CORS
+
+Các trạng thái OPEN/chưa commit và số liệu phía dưới thuộc lượt trước. Trạng thái hiện tại xem mục đầu.
+
+Cập nhật **25/11/2026, Asia/Saigon**, tại **D:\ELA-week5-testing** trên máy mới. Đã tiếp tục theo yêu cầu người dùng; trạng thái tạm dừng trong bàn giao cũ không còn áp dụng. Không làm lại giai đoạn 1–2.
+
+| Giai đoạn | Trạng thái hiện tại | Kết quả |
 | --- | --- | --- |
-| 1. Phân tích và lập kế hoạch | Hoàn thành | Phân tích dự án, tài liệu, API và công cụ. [TEST_PLAN.md](TEST_PLAN.md) bao phủ 13 nhóm. |
-| 2. Thiết kế Test Case | Hoàn thành | [TEST_CASES.csv](TEST_CASES.csv) có 63 ca, 15 cột, UTF-8 BOM. |
-| 3A. Chuẩn bị và khởi chạy | Hoàn thành DB/backend/Expo Web | PostgreSQL, schema/seed/V1_7, Spring Boot và Web đã hoạt động trong phiên chuẩn bị. |
-| 3B | Chưa thực hiện | Chờ yêu cầu tiếp tục, thực thi kiểm thử và ghi kết quả. |
-| 3C | Chưa thực hiện | Chờ phạm vi của yêu cầu tiếp theo. |
-| 4. Sửa lỗi và tái kiểm thử | Chưa thực hiện | Chưa sửa chức năng nghiệp vụ. |
-| 5. Hồi quy và báo cáo | Chưa thực hiện | Chưa có báo cáo kết quả của bộ 63 ca. |
+| 1. Kế hoạch kiểm thử | Hoàn thành, giữ nguyên | [TEST_PLAN.md](TEST_PLAN.md). |
+| 2. Thiết kế test case | Hoàn thành, giữ nguyên thiết kế | 63 ca, 15 cột; 34 Automated, 29 Manual. |
+| 3A. Môi trường máy mới | Web/API khởi chạy; còn thiếu tương thích PostgreSQL 18 cho My Vocabulary | DB test riêng, V1_7 và seed đã xác minh; API và Web Login → Home hoạt động. PostgreSQL 17 không có pg_unicode_fast. |
+| 3B. Thực thi tự động | Đã thực hiện, chưa hoàn tất mọi biến thể | **26 PASS, 6 PARTIAL, 2 BLOCKED** trong 34 ca dự kiến tự động. Maven **94/94**, trong đó **18 tích hợp PostgreSQL**, không skip; API Auth/Password Reset/Quiz đạt phần đã chạy; Web Quiz và FSRS đạt. |
+| 3C. Mobile | Chưa thực hiện | SDK/ADB/Emulator có sẵn; AVD Medium_Phone API 35 được tìm thấy, chưa khởi chạy; không có device trong adb devices. |
+| 4. Ghi nhận lỗi | Đã bắt đầu | [BUG_REPORT.md](BUG_REPORT.md): 1 lỗi CORS OPEN; trở ngại PG17, tài nguyên và vấn đề script được tách riêng. |
+| 5. Sửa lỗi nghiệp vụ và kiểm thử lại | Chưa thực hiện | Giữ nguyên src và backend/src. Chỉ điều chỉnh script/môi trường kiểm thử sau khi lưu lỗi gốc. |
 
-## Test case và kết quả hiện có
+## Kết quả và minh chứng
 
-- 34 ca dự kiến tự động, 29 ca thủ công. Tất cả 63 ca hiện vẫn **NOT RUN**. Kết quả thực tế, Bug ID và minh chứng trong CSV để trống.
-- Phân bố module REG 7, AUTH 4, PASSWORD 9, PROFILE 5, HOME 3, VOCAB 4, FLASH 4, QUIZ 5, SAVED 5, FSRS 6, UI 5, NET 6. PASSWORD chứa cả nhóm OTP và đổi mật khẩu.
-- Các nhãn có giao nhau, gồm Hợp lệ 39, Không hợp lệ 30, Để trống 7 và Dữ liệu biên 17. Một hàng có nhiều biến thể cần ghi kết quả từng biến thể khi thực thi.
-- 3A đã xác minh Maven package -DskipTests, TypeScript noEmit, lint exit 0, API health và giao diện Login → Home qua API thật. [Bằng chứng khởi động](evidence/web-startup.json) thuộc bước chuẩn bị môi trường.
-- Các quan sát validation VAL-01–VAL-04 trong [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) cần kiểm chứng ở giai đoạn 3B, chưa xác nhận lỗi.
+[TEST_EXECUTION_REPORT.md](TEST_EXECUTION_REPORT.md) trình bày lệnh, phạm vi, kết quả, phần thiếu và cách tiếp tục. [TEST_CASES.csv](TEST_CASES.csv) đã điền kết quả thực tế cho 34 ca Automated. **29 ca Manual vẫn NOT RUN**, không dùng kết quả Web để chứng nhận native.
 
-## Môi trường đã chuẩn bị
+- PARTIAL: TC-PASSWORD-04/05/08, TC-HOME-01, TC-FLASH-02, TC-FSRS-02. Mỗi hàng ghi rõ biến thể chưa kiểm.
+- BLOCKED: TC-SAVED-02/05 do **ENV-W5-001**, PostgreSQL 17 thiếu collation mà dự án yêu cầu ở PostgreSQL 18. Không tính HTTP 500 trên môi trường không đáp ứng yêu cầu thành lỗi nghiệp vụ đã xác nhận trên PG18.
+- [JUnit](evidence/new-machine/junit-summary.json), [API bổ sung](evidence/new-machine/additional-api.json), [SQL](evidence/new-machine/database-tests.log), [Web Quiz](evidence/new-machine/quiz-web-final.log), [Web FSRS](evidence/new-machine/review-web-final.log).
+- [Login](evidence/new-machine/web-login.png), [Home](evidence/new-machine/web-home.png), [My Vocabulary bị chặn](evidence/new-machine/saved-vocabulary-postgres17.png), ảnh Flashcard trong cùng thư mục.
+- Minh chứng máy cũ ở evidence/ cấp trên được giữ nguyên làm lịch sử. Minh chứng mới nằm riêng trong **evidence/new-machine/**. Log gốc, dependencies, database và credentials DPAPI nằm trong **.artifacts/**, bị Git ignore.
 
-| Hạng mục | Giá trị |
+## Máy mới và địa chỉ đang dùng
+
+| Hạng mục | Đã xác minh |
 | --- | --- |
-| Node.js / npm | 22.23.5 / 10.9.9 |
-| Temurin JDK / Maven | 21.0.9+10 / 3.9.11 |
-| PostgreSQL | 18.6, bộ cài 18.6-4, quản lý cluster test bằng pg_ctl |
-| Python / Git | 3.11.9 / 2.56.1.windows.1 |
-| Database test | english_learning_fsrs_test |
-| PostgreSQL port | 55436, bind 127.0.0.1 |
-| Backend port | 58125, http://127.0.0.1:58125 |
-| Expo Metro port | 58126 |
-| Expo Web qua proxy | 58127, http://127.0.0.1:58127/login |
-| API URL cho Web | http://127.0.0.1:58127 |
+| Git | Nhánh feat/week5-testing; HEAD cf018aab276318ea094dc953eb27163d1f9ce29f; upstream origin/feat/week5-testing; đầu phiên sạch, ahead/behind 0/0 theo refs local. Không fetch, commit hay push. |
+| Node / npm | 22.19.0 / 10.9.3, tái sử dụng; npm ci theo lockfile, 805 package. |
+| Java / Maven | Temurin 21.0.7+6 / Maven 3.9.16, tái sử dụng. |
+| PostgreSQL | 17.11 tại C:\Program Files\PostgreSQL\17\bin; không cài PostgreSQL 18. Service postgresql-x64-17 tại 5432 giữ nguyên. |
+| Python / Git | 3.10.11 / 2.48.1.windows.1, tái sử dụng. |
+| Android | SDK tại %LOCALAPPDATA%\Android\Sdk, ADB 37.0.1, Emulator 37.1.11; AVD Medium_Phone dùng image API 35. Chưa tìm thấy sdkmanager/cmdline-tools. |
+| Test DB | 127.0.0.1:55436, english_learning_fsrs_test, user ela_week5; dữ liệu tại .artifacts/week5-environment/pgdata. |
+| Backend | http://127.0.0.1:58125 — health UP; Hikari/Hibernate validate thành công. |
+| Expo / Web | Metro 58126; mở **http://127.0.0.1:58127/login** qua proxy hiện có. |
+| Browser tooling | Edge có sẵn; playwright-core 1.65.1 cài cục bộ trong .artifacts/quiz-tools. |
 
-Database test đã nạp schema tuần 3, migrations/seed tuần 4 và V1_6/V1_7. Đã xác nhận 23 bảng, 6 Deck, 90 từ, 90 liên kết và bốn bảng phiên FSRS cùng review_cards.learning_step. Chưa chạy backfill. V1_7 đã áp dụng trên DB test, cần kiểm tra schema trước khi quyết định nạp lại.
+Database chính kiểm thử có **23 bảng, 6 Deck, 90 từ, 90 liên kết**, V1_7 gồm bảng/index/constraint đã xác minh; không chạy backfill. DB english_learning_test được tạo mới trong cùng cluster riêng để chạy SQL constraint, không phải database phát triển. Các suite API dùng cluster ngẫu nhiên khác ở cổng 55446–55449, giữ log/data sau khi dừng dịch vụ suite; seed legacy của suite có 115 từ/133 liên kết nên không dùng số đó thay số seed chuẩn 90/90.
 
-Web dùng [proxy local](scripts/web-proxy.cjs) vì backend hiện trả 401 cho CORS preflight khác origin. Proxy và các server chỉ mở loopback. Mật khẩu/JWT/app smoke lưu local bằng Windows DPAPI. Cluster, credentials, dependencies, build output, installer và log nằm ngoài phạm vi Git.
+## Khởi động lại
 
-Android SDK và Emulator chưa cài. Thiết bị thật chưa kiểm chứng. Gmail SMTP thật chưa cấu hình. Cần xác minh hỗ trợ ảo hóa trước khi chuẩn bị AVD, và có yêu cầu riêng trước khi cài Android Studio/SDK. Lượt Web chưa xác nhận hành vi native.
-
-## Khởi động lại trên máy đã chuẩn bị
-
-Mở thư mục clone có nhánh feat/week5-testing trong VS Code. Các dữ liệu runtime của máy hiện tại được giữ tại thư mục ZIP ban đầu và tham chiếu bằng junction local ở .artifacts/week5-environment. node_modules và backend/target cũng được tham chiếu local để tái sử dụng dependencies/build đã có. Các junction bị Git ignore và không đưa lên GitHub. Thông tin đường dẫn cụ thể chỉ nằm trong .artifacts/WEEK5_LOCAL_HANDOVER.txt trên máy.
-
-Ở máy khác, chuẩn bị công cụ theo [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md), dùng npm ci và Maven build, tạo cluster test riêng theo quy trình trong tài liệu. File DPAPI hiện tại chỉ đọc được bằng tài khoản Windows đã tạo nó, nên cần tạo credentials riêng trên máy mới.
-
-Các lệnh dưới đây chạy từ gốc clone. Xem trạng thái/cổng trước, chỉ khởi động dịch vụ đang dừng. Mỗi server dùng một Terminal riêng.
+Từ gốc repo, kiểm tra cổng và trạng thái trước. Các tiến trình hiện hoạt động trong phiên terminal; có thể dừng khi đóng VS Code hoặc khởi động lại máy.
 
 ```powershell
 git status --short --branch
-git branch --show-current
-pg_ctl -D ".artifacts/week5-environment/pgdata" status
 Get-NetTCPConnection -LocalPort 55436,58125,58126,58127 -State Listen -ErrorAction SilentlyContinue
+& 'C:/Program Files/PostgreSQL/17/bin/pg_ctl.exe' -D '.artifacts/week5-environment/pgdata' status
+powershell.exe -NoProfile -File docs/week5-testing/scripts/prepare-environment.ps1
 ```
 
-Nếu cluster đang dừng, khởi động lại với dữ liệu hiện có.
-
-```powershell
-pg_ctl -D ".artifacts/week5-environment/pgdata" -l ".artifacts/week5-environment/postgres.log" -o "-p 55436 -h 127.0.0.1" -w start
-```
-
-Trong ba Terminal riêng, mở backend, Expo và proxy.
+prepare-environment chỉ nạp SQL khi DB test trống, không phát lại migration trên schema đã có. Script dùng credentials DPAPI của máy mới; không thể mang file này sang tài khoản Windows khác. Nếu runtime đã chạy, không mở thêm tiến trình trùng cổng. Nếu cần mở lại, dùng ba terminal riêng:
 
 ```powershell
 powershell.exe -NoProfile -File docs/week5-testing/scripts/start-backend.ps1
@@ -70,47 +77,14 @@ powershell.exe -NoProfile -File docs/week5-testing/scripts/start-web.ps1
 node docs/week5-testing/scripts/web-proxy.cjs
 ```
 
-Backend script đọc credentials từ local .artifacts/week5-environment/secrets.clixml. Có thể dùng -StateDirectory để chỉ thư mục state riêng. Chưa có file đó trên máy khác thì chuẩn bị credentials trước theo hướng dẫn môi trường.
+start-backend đã giới hạn heap/metaspace và tắt DEBUG thừa kế. start-web đặt TEMP/TMP trên D và tối đa 2 worker. Giữ terminal Web mở. C không còn đủ dung lượng cho cache/bộ cài lớn; không tự dọn dữ liệu cá nhân.
 
-Kiểm tra khởi động.
+## Việc tiếp theo
 
-```powershell
-Invoke-RestMethod http://127.0.0.1:58125/api/v1/health
-Start-Process http://127.0.0.1:58127/login
-```
+1. Có PostgreSQL 18 cho cluster test riêng sau khi người dùng xác nhận bổ sung công cụ, hoặc dùng bản 18 sẵn có được cung cấp; giữ nguyên service/data PG17. Chưa có xác nhận, không cài.
+2. Chạy lại My Vocabulary API, rà locator Web theo UI hiện tại rồi kiểm lại TC-SAVED-02/05. Không thay collation bằng alias giả để lấy PASS.
+3. Thực thi các biến thể còn thiếu trong 6 ca PARTIAL; chỉ đổi thành PASS khi đủ bằng chứng.
+4. Kiểm mobile, quyền ảnh, âm thanh, SecureStore, Back/keyboard, mạng trên thiết bị; Gmail thật chưa cấu hình. Chưa chạy AVD hay cài Expo Go.
+5. Xử lý BUG-W5-001 trong giai đoạn sửa lỗi sau khi thống nhất phạm vi, giữ minh chứng trước sửa và tái kiểm thử/hồi quy sau sửa.
 
-## Các lệnh chuẩn bị tiếp tục Prompt 3B
-
-Các lệnh bên dưới chưa được thực hiện trong bước bàn giao này. Đọc lại phạm vi của Prompt 3B trước khi chạy và chỉ chạy trên môi trường test.
-
-```powershell
-Get-Content -Encoding UTF8 AGENTS.md
-Get-Content -Encoding UTF8 docs/week5-testing/TEST_PLAN.md
-Get-Content -Encoding UTF8 docs/week5-testing/ENVIRONMENT_SETUP.md
-Get-Content -Encoding UTF8 docs/week5-testing/ENVIRONMENT_CHECK_REPORT.md
-Import-Csv -Encoding UTF8 docs/week5-testing/TEST_CASES.csv | Group-Object "Trạng thái"
-mvn.cmd -f backend/pom.xml test
-```
-
-Sau Maven test, các suite HTTP/SQL có thể điều phối bằng lệnh dưới, chọn từng suite theo ca trong CSV.
-
-```powershell
-powershell.exe -NoProfile -File backend/scripts/test-auth-profile.ps1 -Suite Auth
-powershell.exe -NoProfile -File backend/scripts/test-auth-profile.ps1 -Suite PasswordReset
-powershell.exe -NoProfile -File backend/scripts/test-auth-profile.ps1 -Suite Quiz
-powershell.exe -NoProfile -File backend/scripts/test-auth-profile.ps1 -Suite MyVocabulary
-```
-
-Lưu ý trước khi thực thi.
-
-- Script điều phối mặc định dùng DB 55436/API 58125/Web 58126, đang trùng port của môi trường 3A. Chọn các port trống riêng qua -DatabasePort, -ApiPort, -WebPort và -SmtpPort trước khi chạy suite. Suite tạo cluster riêng trong .artifacts.
-- Script điều phối hiện chuẩn bị đến V1_6. Rà yêu cầu FSRS/Home trước khi thực thi, tránh giả định cluster do suite tạo đã có V1_7.
-- JUnit PostgreSQL FSRS chỉ bật khi có FSRS_TEST_JDBC_URL, FSRS_TEST_JDBC_USER và FSRS_TEST_JDBC_PASSWORD, dùng DB test đã xác minh. Nhập secret tại máy, giữ khỏi báo cáo, phân biệt tests skipped.
-- Script Playwright hiện có mặc định Edge. Cần cấu hình trình duyệt khả dụng phù hợp trước khi dùng -Web. Playwright Core đã cài local, Chrome đã được dùng xác minh khởi động.
-- Khi thực thi, cập nhật từng hàng CSV theo kết quả quan sát và lưu minh chứng đã bỏ dữ liệu nhạy cảm. Chưa có kết quả mới trong bước lưu GitHub.
-
-## Bàn giao Git
-
-Chỉ đưa tài liệu tuần 5, script khởi chạy/proxy và minh chứng khởi động đã review lên feat/week5-testing. Bản clone dựa trên lịch sử origin/master, 311 file source có sẵn khớp bản ZIP tại thời điểm đối chiếu. Tài liệu được điều chỉnh để loại đường dẫn cá nhân/thông tin phần cứng và cấu hình riêng không cần chia sẻ. Source nghiệp vụ được giữ nguyên.
-
-Công việc tạm dừng tại đây. Giai đoạn 3B, 3C, 4 và 5 chờ yêu cầu tiếp theo.
+Lint và typecheck cuối phiên đều exit **0**. Chỉ làm việc trên feat/week5-testing; tài liệu và script đang ở working tree để người dùng review, chưa commit/push.

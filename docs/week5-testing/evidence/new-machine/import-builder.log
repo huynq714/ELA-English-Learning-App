@@ -1,0 +1,21 @@
+python : .....
+
+At line:2 char:1
+
++ python database/week4/import/test_import_builder.py *> .artifacts/wee ...
+
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: (.....:String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+----------------------------------------------------------------------
+
+Ran 5 tests in 0.134s
+
+
+
+OK

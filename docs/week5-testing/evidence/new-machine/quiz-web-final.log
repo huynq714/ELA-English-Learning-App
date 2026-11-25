@@ -1,0 +1,10 @@
+PASS Web login enters Home
+PASS Web hides the daily goal and profile saves preserve its stored value
+PASS Web uses the same green folder for every deck
+PASS Web opens source dialogs from the header and keeps icon-only pronunciation controls working
+PASS Web rotates the card, hides meaning on the front, shows it on the back, and resets on the next card
+PASS Web login, deck, flashcard and Quiz load errors offline/404/500
+PASS Web shows the correct answer immediately for correct and incorrect choices, including an answer retry
+PASS Web submit retry preserves answers; fail requires reviewing five flashcards
+PASS Web reverse-direction retake passes at 3/5 and returns to Vocabulary
+PASS Web 401 closes the protected Quiz screen

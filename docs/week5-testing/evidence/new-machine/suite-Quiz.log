@@ -1,0 +1,297 @@
+waiting for server to start.... done
+
+server started
+
+ level |          topic           | verified_words
+
+-------+--------------------------+----------------
+
+ A1    | Giao tiếp và cảm xúc     |             15
+
+ A1    | Vị trí và di chuyển      |             15
+
+ A1    | Thời gian và tần suất    |             15
+
+ A2    | Học tập                  |             15
+
+ A2    | Thành phố và mua sắm     |             15
+
+ A2    | Công việc và nghề nghiệp |             15
+
+(6 rows)
+
+
+
+PASS six decks have bilingual examples on all 90 cards, and reapplying is safe
+
+PASS PostgreSQL pronunciation coverage (scope|with audio|without audio|provenance mismatch): all|4|111|0 topics|2|88|0
+
+PASS register quiz user (HTTP 201)
+
+PASS register second user (HTTP 201)
+
+PASS published A1 topic decks (HTTP 200)
+
+PASS real imported words (HTTP 200)
+
+PASS real imported words (HTTP 200)
+
+PASS real imported words (HTTP 200)
+
+PASS PostgreSQL/API has 45 verified words across three A1 topic decks
+
+PASS open flashcards does not create progress (HTTP 200)
+
+PASS quiz locked before flashcards (HTTP 409)
+
+PASS flip records a studied word (HTTP 200)
+
+PASS resume the same word (HTTP 200)
+
+PASS word outside deck rejected (HTTP 404)
+
+PASS progress requires JWT (HTTP 401)
+
+PASS quiz rejects invalid JWT (HTTP 401)
+
+PASS missing deck rejected (HTTP 404)
+
+PASS deck has fewer than five words (HTTP 422)
+
+PASS ambiguous verified deck rejected (HTTP 422)
+
+PASS unpublished deck rejected (HTTP 404)
+
+PASS unpublished flashcards rejected (HTTP 404)
+
+PASS quiz locked after only one flashcard (HTTP 409)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study flashcard before quiz (HTTP 200)
+
+PASS study progress is account-specific (HTTP 409)
+
+PASS start quiz (HTTP 200)
+
+PASS start quiz (HTTP 200)
+
+PASS concurrent start resumes the same five server-generated questions
+
+PASS unsubmitted result unavailable (HTTP 409)
+
+PASS cannot read another user's quiz (HTTP 404)
+
+PASS cannot submit another user's quiz (HTTP 404)
+
+PASS not enough answers (HTTP 400)
+
+PASS invalid option index (HTTP 400)
+
+PASS duplicate question rejected (HTTP 400)
+
+PASS cannot grade another user's answer (HTTP 404)
+
+PASS grade a correct selection (HTTP 200)
+
+PASS grade an incorrect selection (HTTP 200)
+
+PASS repeat grading returns the locked selection (HTTP 200)
+
+PASS start quiz (HTTP 200)
+
+PASS submit cannot change a graded answer (HTTP 409)
+
+PASS score 2/5 (HTTP 200)
+
+PASS score 2/5 (HTTP 200)
+
+PASS replay cannot change a score (HTTP 200)
+
+PASS fail blocks direct retake (HTTP 409)
+
+PASS pre-fail study is not enough (HTTP 200)
+
+PASS review a required flashcard (HTTP 200)
+
+PASS review a required flashcard (HTTP 200)
+
+PASS review a required flashcard (HTTP 200)
+
+PASS review a required flashcard (HTTP 200)
+
+PASS partial review still blocks retake (HTTP 409)
+
+PASS review a required flashcard (HTTP 200)
+
+PASS start quiz (HTTP 200)
+
+PASS score 3/5 (HTTP 200)
+
+PASS read a stored pass (HTTP 200)
+
+PASS start quiz (HTTP 200)
+
+PASS score 5/5 (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS study flashcard in the other deck (HTTP 200)
+
+PASS second deck quiz (HTTP 200)
+
+PASS score 0/5 (HTTP 200)
+
+PASS third deck quiz (HTTP 200)
+
+PASS deferred COMMIT rejection rolls back both answers and status
+
+PASS PostgreSQL protects completed scores, answers and inter-attempt moves
+
+PASS save a graded answer before restart (HTTP 200)
+
+PASS Topic imports preserve 43 legacy words and add 72 new words
+
+PASS login after backend restart (HTTP 200)
+
+PASS persisted result after restart (HTTP 200)
+
+PASS persisted result after restart (HTTP 200)
+
+PASS persisted result after restart (HTTP 200)
+
+PASS persisted result after restart (HTTP 200)
+
+PASS same in-progress questions after restart (HTTP 200)
+
+PASS PostgreSQL persisted 4 completed attempts, 20 completed answers and 1 in-progress answer
+
+powershell.exe : page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:58156/login
+
+At line:2 char:1
+
++ powershell.exe -NoProfile -File backend/scripts/test-auth-profile.ps1 ...
+
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : NotSpecified: (page.goto: net:...0.1:58156/login:String) [], RemoteException
+
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+
+Call log:
+
+  - navigating to "http://127.0.0.1:58156/login", waiting until "commit"
+
+
+
+    at run (<project-root>\backend\scripts\test-quiz-web.cjs:119:16) {
+
+  log: [
+
+    '  - navigating to "http://127.0.0.1:58156/login", waiting until "commit"'
+
+  ],
+
+  name: 'Error'
+
+}
+
+waiting for server to shut down.... done
+
+server stopped
+
+Quiz web E2E failed. See <project-root>\.artifacts\week4-auth-a68c3c6e39804fcea494a6ae70bdb637
+
+At <project-root>\backend\scripts\test-auth-profile.ps1:181 char:34
+
++ ...   if ($LASTEXITCODE) { throw "$Suite web E2E failed. See $isolated" }
+
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    + CategoryInfo          : OperationStopped: (Quiz web E2E fa...494a6ae70bdb637:String) [], RuntimeException
+
+    + FullyQualifiedErrorId : Quiz web E2E failed. See <project-root>\.artifacts\week4-auth-a68c3c6e39804fcea494
+
+   a6ae70bdb637

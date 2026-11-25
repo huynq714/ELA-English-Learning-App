@@ -1,3 +1,11 @@
+> **Máy mới, 25/11/2026 (Asia/Saigon):** dùng hiện trạng trong [ENVIRONMENT_CHECK_REPORT.md](ENVIRONMENT_CHECK_REPORT.md) và cách mở lại trong [PROGRESS.md](PROGRESS.md). Node22.19/npm10.9.3, Java21.0.7/Maven3.9.16, Python3.10.11, PostgreSQL17.11 và Android SDK đã có. Không cài lại các công cụ này. **PG17 thiếu pg_unicode_fast nên My Vocabulary bị chặn; PG18 vẫn cần xác nhận trước khi bổ sung.** Các hướng dẫn cài đặt bên dưới chỉ là tham khảo khi đã được phép, không phải lệnh tự động thực hiện. Phần “3A đã khởi chạy” cuối tài liệu thuộc máy cũ.
+>
+> Đã có dependencies tại node_modules và .artifacts/quiz-tools, build tại backend/target. Script `scripts/prepare-environment.ps1` nhận `-PostgresBin`, mặc định dùng PG17 có sẵn; chỉ nạp schema khi DB test trống. Dùng DB test riêng 55436, backend58125, Metro58126, proxy58127. `start-backend.ps1` giới hạn heap và tắt DEBUG; `start-web.ps1` đặt TEMP/TMP trên D và tối đa 2 worker. Không mở các suite JVM/Metro đồng thời trên máy hiện tại; ổ C có rất ít chỗ trống.
+>
+> API runner đã bổ sung V1_7; script Auth tương thích Python3.10. Các ví dụ cũ nói runner chỉ đến V1_6 là lịch sử trước thay đổi này. Giữ số cổng suite khác runtime chính. `run-database-checks.ps1` chỉ chạy một lần khi DB english_learning_test chưa tồn tại, không tự dọn hoặc phát lại fixture.
+>
+> Kiểm chứng Maven tích hợp: nhập credentials qua Import-Clixml cục bộ, đặt FSRS_TEST_JDBC_URL/USER/PASSWORD đúng DB english_learning_fsrs_test, tắt DEBUG và giới hạn JAVA_TOOL_OPTIONS, rồi chạy mvn test. Không đưa secret hoặc XML Surefire thô vào Git; dùng `scripts/collect-evidence.py` để xuất danh sách testcase và log đã chọn. [Kết quả thực thi](TEST_EXECUTION_REPORT.md) ghi rõ PARTIAL/BLOCKED và các lượt lỗi môi trường.
+
 # Chuẩn bị môi trường kiểm thử tuần 5
 
 Ngày 25/11/2026. Tài liệu dùng cho giai đoạn 3. Các lệnh cài đặt, tạo DB, migration, khởi động ứng dụng và kiểm thử dưới đây chỉ là hướng dẫn chuẩn bị.

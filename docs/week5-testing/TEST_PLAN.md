@@ -91,3 +91,7 @@ npx.cmd expo start --go --lan --port 0
 Thứ tự dự kiến là kiểm tra công cụ và health → lint/typecheck và JUnit → HTTP/SQL cô lập → web smoke → thử mobile và mạng → tái kiểm thử sau sửa lỗi. Dùng hai tài khoản riêng (A1/A2), một hộp thư test và fixture từ đã học/chưa học/đã lưu/đến hạn. Tạo fixture trên DB thử nghiệm riêng.
 
 Với mỗi ca, ghi ID, thiết bị/OS, cấu hình, dữ liệu đầu vào, bước tái hiện, kỳ vọng, thực tế và trạng thái **Đạt / Không đạt / Bị chặn / Chưa chạy**. Lưu log hoặc ảnh đã bỏ JWT, mật khẩu, OTP và dữ liệu cá nhân. Đánh dấu Giai đoạn 1 hoàn thành khi có đủ ma trận, cách chạy và trạng thái môi trường. Mục tiêu nghiệm thu sau các giai đoạn kế tiếp là các ca P0 đạt, không còn lỗi chặn hoặc lỗi dữ liệu chưa xử lý, và mọi ca chưa chạy đều có lý do cùng môi trường đã xác nhận.
+
+
+## Phạm vi chốt báo cáo
+Giữ kế hoạch và 63 ca gốc; lượt 3C giới hạn 9 ca Web đại diện và smoke Quiz hồi quy. Native chưa chạy; không kiểm sâu hay buộc đủ63 ca. Kết quả mới nhất xem WEEK5_REPORT.md và TEST_CASES.csv.

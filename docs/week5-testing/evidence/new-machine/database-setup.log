@@ -1,0 +1,463 @@
+The files belonging to this database system will be owned by user "Phu Thanh".
+
+This user must also own the server process.
+
+
+
+The database cluster will be initialized with locale "C".
+
+The default text search configuration will be set to "english".
+
+
+
+Data page checksums are disabled.
+
+
+
+creating directory <project-root>/.artifacts/week5-environment/pgdata ... ok
+
+creating subdirectories ... ok
+
+selecting dynamic shared memory implementation ... windows
+
+selecting default "max_connections" ... 100
+
+selecting default "shared_buffers" ... 128MB
+
+selecting default time zone ... Asia/Bangkok
+
+creating configuration files ... ok
+
+running bootstrap script ... ok
+
+performing post-bootstrap initialization ... ok
+
+syncing data to disk ... ok
+
+
+
+Success. You can now start the database server using:
+
+
+
+    ^"C^:^\Program^ Files^\PostgreSQL^\17^\bin^\pg^_ctl^" -D ^"D^:^\ELA^-week5^-testing^\^.artifacts^\week5^-environment^\pgdata^" -l logfile start
+
+
+
+pg_ctl: no server running
+
+waiting for server to start.... done
+
+server started
+
+CREATE DATABASE
+
+APPLY database/week3/schema.sql
+
+BEGIN
+
+CREATE EXTENSION
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+COMMIT
+
+APPLY database/week4/migrations/V1_2__source_vocabulary_fields.sql
+
+BEGIN
+
+ALTER TABLE
+
+CREATE INDEX
+
+COMMENT
+
+COMMENT
+
+COMMENT
+
+COMMIT
+
+APPLY database/week4/migrations/V1_3__quiz_question_snapshot.sql
+
+BEGIN
+
+ALTER TABLE
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE INDEX
+
+COMMIT
+
+APPLY database/week4/migrations/V1_4__topic_deck_catalog.sql
+
+BEGIN
+
+ALTER TABLE
+
+DO
+
+CREATE INDEX
+
+COMMIT
+
+APPLY database/week4/import/data/apply_topic_decks.sql
+
+BEGIN
+
+SET
+
+CREATE TABLE
+
+INSERT 0 6
+
+CREATE TABLE
+
+INSERT 0 90
+
+LOCK TABLE
+
+DO
+
+INSERT 0 6
+
+INSERT 0 90
+
+INSERT 0 90
+
+DO
+
+ level |          topic           | verified_words
+
+-------+--------------------------+----------------
+
+ A1    | Giao tiếp và cảm xúc     |             15
+
+ A1    | Vị trí và di chuyển      |             15
+
+ A1    | Thời gian và tần suất    |             15
+
+ A2    | Học tập                  |             15
+
+ A2    | Thành phố và mua sắm     |             15
+
+ A2    | Công việc và nghề nghiệp |             15
+
+(6 rows)
+
+
+
+COMMIT
+
+APPLY database/week4/migrations/V1_5__password_reset.sql
+
+BEGIN
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE INDEX
+
+COMMIT
+
+APPLY database/week4/import/data/apply_pronunciations.sql
+
+BEGIN
+
+SET
+
+UPDATE 81
+
+COMMIT
+
+APPLY database/week4/import/data/apply_topic_examples.sql
+
+BEGIN
+
+SET
+
+UPDATE 72
+
+COMMIT
+
+APPLY database/week5/migrations/V1_6__user_saved_words.sql
+
+BEGIN
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE INDEX
+
+COMMIT
+
+APPLY database/week5/migrations/V1_7__fsrs_persistence.sql
+
+BEGIN
+
+ALTER TABLE
+
+ALTER TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+COMMIT
+
+      current_database      | inet_server_addr | inet_server_port | current_user |                                 version
+
+----------------------------+------------------+------------------+--------------+--------------------------------------------------------------------------
+
+ english_learning_fsrs_test | 127.0.0.1        |            55436 | ela_week5    | PostgreSQL 17.11 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit
+
+(1 row)
+
+
+
+ public_tables
+
+---------------
+
+            23
+
+(1 row)
+
+
+
+ decks | words | links
+
+-------+-------+-------
+
+     6 |    90 |    90
+
+(1 row)
+
+
+
+   to_regclass   |     to_regclass      |    to_regclass     | to_regclass
+
+-----------------+----------------------+--------------------+--------------
+
+ review_sessions | review_session_items | review_idempotency | user_streaks
+
+(1 row)
+
+
+
+  table_name  |  column_name   |     data_type
+
+--------------+----------------+-------------------
+
+ review_cards | learning_step  | smallint
+
+ review_logs  | elapsed_days   | double precision
+
+ review_logs  | scheduled_days | integer
+
+ review_logs  | state_before   | character varying
+
+(4 rows)
+
+
+
+      tablename       |                      indexname                      |                                                                          indexdef
+
+----------------------+-----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ review_idempotency   | review_idempotency_pkey                             | CREATE UNIQUE INDEX review_idempotency_pkey ON public.review_idempotency USING btree (user_id, request_token)
+
+ review_idempotency   | idx_review_idempotency_expiry                       | CREATE INDEX idx_review_idempotency_expiry ON public.review_idempotency USING btree (expires_at)
+
+ review_session_items | review_session_items_pkey                           | CREATE UNIQUE INDEX review_session_items_pkey ON public.review_session_items USING btree (session_id, word_id)
+
+ review_session_items | review_session_items_session_id_queue_position_key  | CREATE UNIQUE INDEX review_session_items_session_id_queue_position_key ON public.review_session_items USING btree (session_id, queue_position)
+
+ review_session_items | review_session_items_user_id_session_id_word_id_key | CREATE UNIQUE INDEX review_session_items_user_id_session_id_word_id_key ON public.review_session_items USING btree (user_id, session_id, word_id)
+
+ review_session_items | idx_review_session_items_queue                      | CREATE INDEX idx_review_session_items_queue ON public.review_session_items USING btree (user_id, session_id, status, queue_position)
+
+ review_sessions      | review_sessions_pkey                                | CREATE UNIQUE INDEX review_sessions_pkey ON public.review_sessions USING btree (id)
+
+ review_sessions      | review_sessions_user_id_id_key                      | CREATE UNIQUE INDEX review_sessions_user_id_id_key ON public.review_sessions USING btree (user_id, id)
+
+ review_sessions      | idx_review_sessions_user_active                     | CREATE INDEX idx_review_sessions_user_active ON public.review_sessions USING btree (user_id, started_at DESC) WHERE ((status)::text = 'IN_PROGRESS'::text)
+
+ user_streaks         | user_streaks_pkey                                   | CREATE UNIQUE INDEX user_streaks_pkey ON public.user_streaks USING btree (user_id)
+
+(10 rows)
+
+
+
+      table_name      |                       conname                       |                                                                                                                                                      pg_get_constraintdef
+
+----------------------+-----------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ review_sessions      | review_sessions_check                               | CHECK (((((status)::text = 'IN_PROGRESS'::text) AND (finished_at IS NULL)) OR (((status)::text = ANY ((ARRAY['COMPLETED'::character varying, 'ABANDONED'::character varying])::text[])) AND (finished_at IS NOT NULL))))
+
+ review_sessions      | review_sessions_pkey                                | PRIMARY KEY (id)
+
+ review_sessions      | review_sessions_session_type_check                  | CHECK (((session_type)::text = ANY ((ARRAY['DUE'::character varying, 'CRAM'::character varying])::text[])))
+
+ review_sessions      | review_sessions_status_check                        | CHECK (((status)::text = ANY ((ARRAY['IN_PROGRESS'::character varying, 'COMPLETED'::character varying, 'ABANDONED'::character varying])::text[])))
+
+ review_sessions      | review_sessions_target_count_check                  | CHECK (((target_count >= 1) AND (target_count <= 500)))
+
+ review_sessions      | review_sessions_user_id_fkey                        | FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+ review_sessions      | review_sessions_user_id_id_key                      | UNIQUE (user_id, id)
+
+ review_session_items | review_session_items_again_count_check              | CHECK ((again_count >= 0))
+
+ review_session_items | review_session_items_check                          | CHECK ((((status)::text <> 'COMPLETED'::text) OR (answered_at IS NOT NULL)))
+
+ review_session_items | review_session_items_last_rating_check              | CHECK (((last_rating IS NULL) OR ((last_rating)::text = ANY ((ARRAY['AGAIN'::character varying, 'HARD'::character varying, 'GOOD'::character varying, 'EASY'::character varying])::text[]))))
+
+ review_session_items | review_session_items_pkey                           | PRIMARY KEY (session_id, word_id)
+
+ review_session_items | review_session_items_queue_position_check           | CHECK ((queue_position > 0))
+
+ review_session_items | review_session_items_session_id_queue_position_key  | UNIQUE (session_id, queue_position)
+
+ review_session_items | review_session_items_status_check                   | CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'COMPLETED'::character varying])::text[])))
+
+ review_session_items | review_session_items_user_id_session_id_fkey        | FOREIGN KEY (user_id, session_id) REFERENCES review_sessions(user_id, id) ON DELETE CASCADE
+
+ review_session_items | review_session_items_user_id_session_id_word_id_key | UNIQUE (user_id, session_id, word_id)
+
+ review_session_items | review_session_items_user_id_word_id_fkey           | FOREIGN KEY (user_id, word_id) REFERENCES review_cards(user_id, word_id) ON DELETE CASCADE
+
+ review_idempotency   | review_idempotency_check                            | CHECK ((expires_at > created_at))
+
+ review_idempotency   | review_idempotency_check1                           | CHECK (((((state)::text = 'PROCESSING'::text) AND (http_status IS NULL) AND (stored_response IS NULL) AND (completed_at IS NULL)) OR (((state)::text = 'COMPLETED'::text) AND (http_status IS NOT NULL) AND ((http_status >= 200) AND (http_status <= 299)) AND (stored_response IS NOT NULL) AND (completed_at IS NOT NULL))))
+
+ review_idempotency   | review_idempotency_pkey                             | PRIMARY KEY (user_id, request_token)
+
+ review_idempotency   | review_idempotency_rating_check                     | CHECK (((rating)::text = ANY ((ARRAY['AGAIN'::character varying, 'HARD'::character varying, 'GOOD'::character varying, 'EASY'::character varying])::text[])))
+
+ review_idempotency   | review_idempotency_request_hash_check               | CHECK ((octet_length(request_hash) = 32))
+
+ review_idempotency   | review_idempotency_state_check                      | CHECK (((state)::text = ANY ((ARRAY['PROCESSING'::character varying, 'COMPLETED'::character varying])::text[])))
+
+ review_idempotency   | review_idempotency_user_id_fkey                     | FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+ review_idempotency   | review_idempotency_user_id_session_id_word_id_fkey  | FOREIGN KEY (user_id, session_id, word_id) REFERENCES review_session_items(user_id, session_id, word_id) ON DELETE CASCADE
+
+ user_streaks         | user_streaks_check                                  | CHECK ((longest_streak >= current_streak))
+
+ user_streaks         | user_streaks_current_streak_check                   | CHECK ((current_streak >= 0))
+
+ user_streaks         | user_streaks_longest_streak_check                   | CHECK ((longest_streak >= 0))
+
+ user_streaks         | user_streaks_pkey                                   | PRIMARY KEY (user_id)
+
+ user_streaks         | user_streaks_user_id_fkey                           | FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+(30 rows)

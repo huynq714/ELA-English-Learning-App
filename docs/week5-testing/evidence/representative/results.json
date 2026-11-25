@@ -1,0 +1,47 @@
+[
+  {
+    "id": "TC-NET-01",
+    "status": "WEB PASS",
+    "detail": "Web: lỗi login khi abort request; pending được giải phóng"
+  },
+  {
+    "id": "TC-AUTH-04",
+    "status": "WEB PASS",
+    "detail": "Web: login phục hồi sau lỗi; chưa kiểm SecureStore native"
+  },
+  {
+    "id": "TC-HOME-01",
+    "status": "WEB PASS",
+    "detail": "Web Home sau bookmark tải lại; API learned/due/cram=0"
+  },
+  {
+    "id": "TC-HOME-03",
+    "status": "WEB PASS",
+    "detail": "Web Home -> Review -> Back; chưa có phiên dở/native"
+  },
+  {
+    "id": "TC-UI-03",
+    "status": "WEB PASS",
+    "detail": "Web 320x568/390x844/430x932: Profile cuộn tới nút lưu; chưa large-font/nội dung dài/native"
+  },
+  {
+    "id": "TC-NET-02",
+    "status": "WEB PASS",
+    "detail": "Web tải Deck lỗi mạng -> Thử lại -> danh mục phục hồi"
+  },
+  {
+    "id": "TC-FLASH-04",
+    "status": "WEB PASS",
+    "detail": "Web reduced-motion, lật lặp không crash; chưa Deck rỗng/native"
+  },
+  {
+    "id": "TC-UI-05",
+    "status": "WEB PASS",
+    "detail": "Web tab/Back/logout rồi URL profile trở về Welcome, không truy cập profile; chưa Back phần cứng"
+  },
+  {
+    "id": "TC-UI-04",
+    "status": "WEB PASS",
+    "detail": "Web Profile cuộn tới nút cuối trên ba viewport; chưa bàn phím native/các form OTP"
+  }
+]

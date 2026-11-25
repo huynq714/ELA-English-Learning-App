@@ -1,0 +1,21 @@
+[
+  {
+    "origin": "http://localhost:58126",
+    "status": 200,
+    "allowOrigin": "http://localhost:58126"
+  },
+  {
+    "origin": "https://untrusted.example",
+    "status": 403,
+    "allowOrigin": null
+  },
+  {
+    "origin": "http://localhost:58126.evil.example",
+    "status": 403,
+    "allowOrigin": null
+  },
+  {
+    "browserCrossOriginPost": 401,
+    "meaning": "Browser đọc được 401 từ API; không bị CORS chặn, không bypass auth"
+  }
+]

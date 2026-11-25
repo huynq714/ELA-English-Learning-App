@@ -17,9 +17,11 @@ $env:AUTH_JWT_SECRET = [System.Net.NetworkCredential]::new('', $secrets.JwtSecre
 $env:SPRING_DATASOURCE_URL = 'jdbc:postgresql://127.0.0.1:55436/english_learning_fsrs_test'
 $env:SERVER_ADDRESS = '127.0.0.1'
 $env:SERVER_PORT = '58125'
+$env:ELA_WEB_ALLOWED_ORIGINS = 'http://localhost:58126,http://127.0.0.1:58126,http://127.0.0.1:58127'
+$env:DEBUG = 'false'
 Set-Location $projectRoot
 try {
-    & $java -jar $jar
+    & $java -Xms64m -Xmx384m -XX:MaxMetaspaceSize=256m -jar $jar
 } finally {
     Remove-Item Env:DB_PASSWORD, Env:AUTH_JWT_SECRET -ErrorAction SilentlyContinue
 }

@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import time
 from urllib.error import HTTPError
@@ -108,7 +109,10 @@ def main():
     session_a = expect("login A", "POST", "/auth/login", 200,
                        payload={"email": alice["email"].upper(), "password": password})
     assert session_a["tokenType"] == "Bearer"
-    assert datetime.fromisoformat(session_a["expiresAt"]) > datetime.now(timezone.utc)
+    # Python 3.10 accepts microseconds and an explicit UTC offset, whereas Java
+    # Instant can serialize nanoseconds followed by Z.
+    expires_at = re.sub(r"(\.\d{6})\d+", r"\1", session_a["expiresAt"]).replace("Z", "+00:00")
+    assert datetime.fromisoformat(expires_at) > datetime.now(timezone.utc)
     access_a = session_a["accessToken"]
     access_b = expect("login B", "POST", "/auth/login", 200,
                       payload={"email": bob["email"], "password": password})["accessToken"]

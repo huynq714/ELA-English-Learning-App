@@ -1,0 +1,9 @@
+TC-NET-01 Web: lỗi login khi abort request; pending được giải phóng
+TC-AUTH-04 Web: login phục hồi sau lỗi; chưa kiểm SecureStore native
+TC-HOME-01 Web Home sau bookmark tải lại; API learned/due/cram=0
+TC-HOME-03 Web Home -> Review -> Back; chưa có phiên dở/native
+TC-UI-03 Web 320x568/390x844/430x932: Profile cuộn tới nút lưu; chưa large-font/nội dung dài/native
+TC-NET-02 Web tải Deck lỗi mạng -> Thử lại -> danh mục phục hồi
+TC-FLASH-04 Web reduced-motion, lật lặp không crash; chưa Deck rỗng/native
+TC-UI-05 Web tab/Back/logout rồi URL profile trở về Welcome, không truy cập profile; chưa Back phần cứng
+TC-UI-04 Web Profile cuộn tới nút cuối trên ba viewport; chưa bàn phím native/các form OTP

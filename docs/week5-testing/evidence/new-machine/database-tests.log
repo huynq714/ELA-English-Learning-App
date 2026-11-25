@@ -1,0 +1,231 @@
+CREATE DATABASE
+
+BEGIN
+
+CREATE EXTENSION
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE INDEX
+
+CREATE TABLE
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+COMMIT
+
+PASS schema.sql
+
+BEGIN
+
+INSERT 0 1
+
+INSERT 0 1
+
+psql:<project-root>/database/week3/test_basic_constraints.sql:15: NOTICE:  PASS: User/Profile create and read
+
+DO
+
+psql:<project-root>/database/week3/test_basic_constraints.sql:26: NOTICE:  PASS: case-insensitive duplicate email rejected
+
+DO
+
+psql:<project-root>/database/week3/test_basic_constraints.sql:37: NOTICE:  PASS: missing parent FK rejected
+
+DO
+
+INSERT 0 2
+
+INSERT 0 2
+
+INSERT 0 3
+
+psql:<project-root>/database/week3/test_basic_constraints.sql:62: NOTICE:  PASS: Deck-Word many-to-many relationship
+
+psql:<project-root>/database/week3/test_basic_constraints.sql:62: NOTICE:  PASS: duplicate Deck-Word link rejected
+
+DO
+
+ROLLBACK
+
+         cleanup_status
+
+---------------------------------
+
+ Fixture transaction rolled back
+
+(1 row)
+
+
+
+PASS test_basic_constraints.sql
+
+BEGIN
+
+INSERT 0 1
+
+INSERT 0 1
+
+INSERT 0 2
+
+INSERT 0 2
+
+INSERT 0 3
+
+INSERT 0 1
+
+INSERT 0 1
+
+INSERT 0 1
+
+psql:<project-root>/database/week3/test_integrity_workflows.sql:42: NOTICE:  PASS: review_logs composite FK rejects a missing card
+
+psql:<project-root>/database/week3/test_integrity_workflows.sql:42: NOTICE:  PASS: word with learning history cannot be deleted
+
+DO
+
+INSERT 0 1
+
+INSERT 0 1
+
+psql:<project-root>/database/week3/test_integrity_workflows.sql:56: NOTICE:  PASS: scenario used by Role-play cannot be deleted
+
+DO
+
+INSERT 0 1
+
+INSERT 0 6
+
+INSERT 0 1
+
+psql:<project-root>/database/week3/test_integrity_workflows.sql:78: NOTICE:  PASS: feedback for AI message rejected
+
+DO
+
+UPDATE 1
+
+INSERT 0 1
+
+INSERT 0 5
+
+UPDATE 1
+
+COMMIT
+
+                                      result
+
+-----------------------------------------------------------------------------------
+
+ Workflow fixtures committed; valid deferred Quiz and Conversation triggers passed
+
+(1 row)
+
+
+
+PASS test_integrity_workflows.sql
+
+PASS test_quiz_missing_answer_commit.sql (expected COMMIT rejection, psql exit 3)
+
+PASS test_quiz_score_mismatch_commit.sql (expected COMMIT rejection, psql exit 3)
+
+PASS test_conversation_incomplete_commit.sql (expected COMMIT rejection, psql exit 3)
+
+PASS negative fixture transactions rolled back completely
+
+BEGIN
+
+psql:<project-root>/database/week3/test_user_cascade.sql:13: NOTICE:  PASS: isolated user and dependent test fixtures found
+
+DO
+
+DELETE 1
+
+COMMIT
+
+                         cascade_test
+
+--------------------------------------------------------------
+
+ PASS: user and dependent personal history deleted by cascade
+
+(1 row)

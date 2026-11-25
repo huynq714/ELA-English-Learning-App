@@ -1,0 +1,58 @@
+{
+  "api": [
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/review/summary",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/decks",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/my-vocabulary/count",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/my-vocabulary/groups",
+      "status": 500
+    },
+    {
+      "path": "/api/v1/my-vocabulary/count",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/my-vocabulary/groups",
+      "status": 500
+    }
+  ],
+  "pageErrors": [],
+  "decks": 3,
+  "summary": {
+    "learnedCount": 0,
+    "dueCount": 0,
+    "cramCount": 0,
+    "newCount": 0,
+    "learningCount": 0,
+    "reviewCount": 0,
+    "relearningCount": 0,
+    "currentStreak": 0,
+    "longestStreak": 0,
+    "totalCards": 0,
+    "activeSessionId": null
+  },
+  "preflight": {
+    "status": 401,
+    "allowOrigin": null
+  },
+  "loginRendered": true,
+  "homeRendered": true,
+  "savedVocabulary": {
+    "http": 500,
+    "errorVisible": true,
+    "status": "BLOCKED"
+  }
+}
