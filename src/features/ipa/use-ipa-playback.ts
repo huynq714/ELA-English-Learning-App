@@ -1,4 +1,5 @@
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import * as Speech from 'expo-speech';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -13,6 +14,7 @@ export function useIpaPlayback() {
     generation.current += 1;
     release.current?.();
     release.current = null;
+    void Speech.stop().catch(() => {});
     setPlayback(null);
   }, []);
 
@@ -27,6 +29,8 @@ export function useIpaPlayback() {
     let player: ReturnType<typeof createAudioPlayer> | null = null;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
+      await Speech.stop();
+      if (!active()) return;
       await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true, shouldPlayInBackground: false });
       if (!active()) return;
       player = createAudioPlayer({ uri });
@@ -69,5 +73,45 @@ export function useIpaPlayback() {
     }
   }
 
-  return { playback, play, stop };
+  async function speak(key: string, word: string) {
+    stop();
+    const current = generation.current;
+    const active = () => generation.current === current;
+    setPlayback({ key, phase: 'loading' });
+    try {
+      await Speech.stop();
+      if (!active()) return;
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true, shouldPlayInBackground: false });
+      if (!active()) return;
+      const voices = await Speech.getAvailableVoicesAsync().catch(() => []);
+      if (!active()) return;
+      const voice = voices.find(item => item.language.toLowerCase() === 'en-gb');
+      const timeout = setTimeout(() => {
+        if (active()) {
+          void Speech.stop().catch(() => {});
+          setPlayback({ key, phase: 'error' });
+        }
+      }, 12_000);
+      release.current = () => clearTimeout(timeout);
+      Speech.speak(word, {
+        language: voice?.language ?? 'en-GB',
+        ...(voice ? { voice: voice.identifier } : {}),
+        useApplicationAudioSession: true,
+        onStart: () => {
+          clearTimeout(timeout);
+          if (active()) setPlayback({ key, phase: 'playing' });
+        },
+        onDone: () => { if (active()) stop(); },
+        onStopped: () => { if (active()) stop(); },
+        onError: () => {
+          clearTimeout(timeout);
+          if (active()) setPlayback({ key, phase: 'error' });
+        },
+      });
+    } catch {
+      if (active()) setPlayback({ key, phase: 'error' });
+    }
+  }
+
+  return { playback, play, speak, stop };
 }

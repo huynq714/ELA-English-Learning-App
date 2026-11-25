@@ -1,17 +1,19 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useState } from 'react';
+import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
 
 import { AppCard, AppHeader, AppText, Asset, PrimaryButton, Screen } from '@/components/ui';
 import { findIpaSound, type IpaExample, type IpaSound } from '@/features/ipa/catalogue';
-import { ipaIllustrations } from '@/features/ipa/illustrations';
+import { ipaAudioSource } from '@/features/ipa/audio-source';
 import { ipaWordAudio } from '@/features/ipa/word-audio';
 import { useIpaPlayback } from '@/features/ipa/use-ipa-playback';
 import { useIpaRecording } from '@/features/ipa/use-ipa-recording';
+import { ipaReferenceRepository, type IpaReferenceResult } from '@/features/ipa/ipa-reference-repository';
+import { useSession } from '@/features/auth/view-model/session-context';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
-function Back({ title }: { title: string }) {
+function Back({ title, onInfo }: { title: string; onInfo?: () => void }) {
   return <View style={styles.header}>
     <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => {
       if (router.canGoBack()) router.back();
@@ -20,6 +22,8 @@ function Back({ title }: { title: string }) {
       <AppText size={25}>‹</AppText>
     </Pressable>
     <AppHeader title={title} />
+    {onInfo && <Pressable accessibilityRole="button" accessibilityLabel="Thông tin nguồn IPA"
+      style={styles.info} onPress={onInfo}><AppText color={colors.primary} size={24}>ⓘ</AppText></Pressable>}
   </View>;
 }
 
@@ -34,24 +38,27 @@ type AudioController = ReturnType<typeof useIpaPlayback>;
 
 function SampleAudio({ word, audio, label }: { word: string; audio: AudioController; label?: string }) {
   const recording = ipaWordAudio[word];
+  const source = ipaAudioSource(word, recording?.url);
   const loading = audio.playback?.key === word && audio.playback.phase === 'loading';
   const playing = audio.playback?.key === word && audio.playback.phase === 'playing';
   return <View style={styles.audioGroup}>
-    <Pressable accessibilityRole="button" accessibilityLabel={label ?? `Nghe phát âm ${word}`}
-      disabled={!recording} style={[styles.audioButton, !recording && styles.disabled]}
+    <Pressable accessibilityRole="button" accessibilityLabel={label ?? `Nghe phát âm ${word} (${source === 'tts' ? 'giọng máy TTS' : source === 'recorded' ? 'bản ghi' : 'không khả dụng'})`}
+      disabled={source === 'unavailable'} style={[styles.audioButton, source === 'unavailable' && styles.disabled]}
       onPress={() => {
-        if (!recording) return;
         if (playing || loading) audio.stop();
-        else void audio.play(word, recording.url);
+        else if (source === 'recorded' && recording) void audio.play(word, recording.url);
+        else if (source === 'tts') void audio.speak(word, word);
       }}>
       {loading || playing ? <AppText color={colors.primary} size={18}>{loading ? '…' : '■'}</AppText>
         : <Asset source={figmaAssets.flashcard.volume2} width={20} style={{ tintColor: colors.primary }} />}
     </Pressable>
-    {recording && recording.accent !== 'en-GB'
-      && <AppText size={10} color={colors.muted}>{recording.accent === 'unknown' ? 'Chưa rõ giọng' : recording.accent}</AppText>}
-    {!recording && <AppText size={12} color={colors.muted}>Chưa có audio</AppText>}
+    <AppText size={10} color={colors.muted}>{source === 'tts' ? Platform.OS === 'ios' ? 'Giọng máy (TTS) · tắt im lặng' : 'Giọng máy (TTS)' : source === 'unavailable' ? 'Không có audio' : recording?.accent === 'en-GB' ? 'Bản ghi · en-GB' : recording?.accent === 'unknown' ? 'Bản ghi · chưa rõ giọng' : `Bản ghi · ${recording?.accent}`}</AppText>
     {audio.playback?.key === word && audio.playback.phase === 'error'
-      && <AppText accessibilityRole="alert" size={12} color={colors.error}>Không phát được audio.</AppText>}
+      && <AppText accessibilityRole="alert" size={12} color={colors.error}>
+        {source === 'tts' && Platform.OS === 'ios'
+          ? 'Không phát được TTS. Hãy tắt chế độ im lặng trên iPhone rồi thử lại.'
+          : 'Không phát được audio. Hãy thử lại.'}
+      </AppText>}
   </View>;
 }
 
@@ -76,24 +83,13 @@ export function IpaDetailScreen() {
   const audio = useIpaPlayback();
   const [showSources, setShowSources] = useState(false);
   if (!sound) return <MissingLesson />;
-  const illustration = ipaIllustrations[sound.id as keyof typeof ipaIllustrations];
-  const sample = sound.examples.find(item => {
-    const recording = ipaWordAudio[item.word];
-    return recording?.ipa.includes(sound.symbol) || (recording?.accent === 'en-GB' && sound.kind === 'consonant');
-  });
-  return <Screen testID="screen-ipa-detail" header={<Back title="Chi tiết âm" />} contentStyle={styles.content}>
+  const soundType = sound.kind === 'consonant' ? 'Phụ âm' : sound.kind === 'diphthong' ? 'Nguyên âm đôi' : 'Nguyên âm đơn';
+  return <Screen testID="screen-ipa-detail" header={<Back title="Chi tiết âm" onInfo={() => setShowSources(true)} />}
+    contentStyle={styles.content}>
     <View style={styles.center}>
       <AppText size={57} weight="extrabold" style={styles.ipa}>/{sound.symbol}/</AppText>
-      {sample ? <View style={styles.center}>
-        <SampleAudio word={sample.word} audio={audio} label={`Nghe từ mẫu ${sample.word} có âm ${sound.symbol}`} />
-        <AppText size={12} color={colors.muted}>Nghe từ mẫu “{sample.word}” có âm /{sound.symbol}/</AppText>
-      </View> : <AppText color={colors.muted}>Chưa có bản ghi âm mẫu đã xác minh.</AppText>}
+      <AppText color={colors.muted}>{soundType}</AppText>
     </View>
-    {illustration && <View style={styles.center}>
-      <Image source={illustration.source} style={styles.illustration} resizeMode="contain"
-        accessibilityLabel={illustration.caption} />
-      <AppText size={12} color={colors.muted}>{illustration.caption}</AppText>
-    </View>}
     <AppCard style={styles.panel}>
       <AppText size={18} weight="bold">Cách phát âm</AppText>
       <AppText>{sound.guidance}</AppText>
@@ -110,29 +106,30 @@ export function IpaDetailScreen() {
         <AppText color={colors.primary}>Luyện</AppText>
       </Pressable>
     </AppCard>)}
-    <Pressable accessibilityRole="button" style={styles.link} onPress={() => setShowSources(true)}>
-      <AppText size={12} color={colors.primary}>Nguồn ảnh và bản ghi âm ⓘ</AppText>
-    </Pressable>
     <Modal visible={showSources} transparent animationType="fade" onRequestClose={() => setShowSources(false)}>
       <View style={styles.modalBackdrop}>
         <AppCard style={styles.modalCard}>
           <ScrollView contentContainerStyle={styles.credits}>
             <AppText size={18} weight="bold">Nguồn học liệu</AppText>
-            {illustration && <View style={styles.credits}>
-              <AppText weight="semibold">Minh họa khẩu hình</AppText>
-              <AppText size={12}>{illustration.author || 'Wikimedia Commons'} · {illustration.license}</AppText>
-              <AppText size={11} selectable>{illustration.credit}</AppText>
-              <AppText size={11} selectable>{illustration.licenseUrl}</AppText>
-            </View>}
+            <AppText size={12}>Bảng âm tham chiếu British Council Sounds Right. Hướng dẫn tiếng Việt do ứng dụng biên soạn; phiên âm ví dụ theo tiếng Anh Anh.</AppText>
+            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL('https://www.britishcouncil.org/english/business/apps/sounds-right').catch(() => {})}>
+              <AppText size={12} color={colors.primary}>British Council Sounds Right ↗</AppText>
+            </Pressable>
             {sound.examples.filter(item => ipaWordAudio[item.word]).map(item => {
               const source = ipaWordAudio[item.word];
               return <View key={item.word} style={styles.credits}>
                 <AppText weight="semibold">Audio: {item.word}</AppText>
                 <AppText size={12}>{source.author} · {source.license} · {source.accent}</AppText>
-                <AppText size={11} selectable>{source.credit}</AppText>
-                <AppText size={11} selectable>{source.licenseUrl}</AppText>
+                <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(source.credit).catch(() => {})}>
+                  <AppText size={11} color={colors.primary}>{source.credit} ↗</AppText>
+                </Pressable>
+                <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(source.licenseUrl).catch(() => {})}>
+                  <AppText size={11} color={colors.primary}>{source.licenseUrl} ↗</AppText>
+                </Pressable>
               </View>;
             })}
+            {sound.examples.some(item => ipaAudioSource(item.word, ipaWordAudio[item.word]?.url) === 'tts')
+              && <AppText size={12}>Các từ chưa có bản ghi dùng giọng máy TTS của thiết bị. TTS không phải bản ghi từ điển và giọng thực tế phụ thuộc thiết bị.</AppText>}
           </ScrollView>
           <Pressable accessibilityRole="button" style={styles.link} onPress={() => setShowSources(false)}>
             <AppText weight="semibold" color={colors.primary}>Đóng</AppText>
@@ -153,7 +150,7 @@ export function IpaPracticeScreen() {
   const busy = phase === 'starting' || phase === 'stopping';
   if (!sound || !example) return <MissingLesson />;
   const openResult = () => router.push({
-    pathname: '/ipa-result', params: { sound: sound.id, word: example.word, invalid: take?.issue ? '1' : '0' },
+    pathname: '/ipa-result', params: { sound: sound.id, word: example.word, invalid: take?.issue ? '1' : '0', audioUri: take?.uri ?? '' },
   });
   return <Screen testID="screen-ipa-practice" header={<Back title="Luyện phát âm" />}
     contentStyle={[styles.content, styles.practice]}>
@@ -185,21 +182,49 @@ export function IpaPracticeScreen() {
 
 export function IpaResultScreen() {
   const { sound, example } = useLesson();
-  const { invalid } = useLocalSearchParams<{ invalid?: string }>();
+  const { invalid, audioUri } = useLocalSearchParams<{ invalid?: string; audioUri?: string }>();
   const audio = useIpaPlayback();
+  const session = useSession();
+  const soundId = sound?.id;
+  const targetWord = example?.word;
+  const authenticate = session.authenticated;
+  const [assessment, setAssessment] = useState<IpaReferenceResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!soundId || !targetWord || invalid === '1' || !audioUri) return;
+    let active = true;
+    void authenticate(token => ipaReferenceRepository.assess(token, audioUri, targetWord))
+      .then(result => { if (active) setAssessment(result); })
+      .catch(() => { if (active) setError('Không kết nối được dịch vụ chấm tham khảo. Hãy thử lại.'); });
+    return () => { active = false; };
+  }, [soundId, targetWord, invalid, audioUri, authenticate]);
   if (!sound || !example) return <MissingLesson />;
   const unassessable = invalid === '1';
+  const loading = Boolean(audioUri && !unassessable && !assessment && !error);
+  const hasReference = !unassessable && assessment?.status === 'REFERENCE' && assessment.reliable === true
+    && typeof assessment.score === 'number' && Number.isFinite(assessment.score)
+    && assessment.score >= 0 && assessment.score <= 100;
   return <Screen testID="screen-ipa-result" header={<Back title="Kết quả phát âm" />}
     contentStyle={[styles.content, styles.practice]}>
     <Word example={example} sound={sound} audio={audio} />
     <View style={styles.center}>
-      <AppText size={42} weight="extrabold" color={colors.primary}>—</AppText>
-      <AppText color={colors.muted}>UNASSESSABLE · {unassessable ? 'Bản ghi không hợp lệ' : 'Chấm điểm chưa khả dụng'}</AppText>
+      {hasReference ? <>
+        <AppText size={42} weight="extrabold" color={colors.primary}>{Math.round(assessment.score!)}/100</AppText>
+        <AppText color={colors.muted}>Điểm tham khảo, chưa dùng để xét hoàn thành</AppText>
+      </> : <>
+        <AppText size={42} weight="extrabold" color={colors.muted}>—</AppText>
+        <AppText color={colors.muted}>{loading ? 'Đang phân tích bản ghi…' : `UNASSESSABLE · ${unassessable ? 'Bản ghi không hợp lệ' : assessment?.reasons?.join(', ') || error || 'Kết quả chưa đáng tin cậy'}`}</AppText>
+      </>}
     </View>
     <AppCard style={styles.panel}>
       <AppText weight="bold">Nhận xét</AppText>
-      <AppText>{unassessable ? 'Hãy quay lại và ghi âm một từ rõ ràng trong môi trường yên tĩnh.'
-        : 'Bạn có thể nghe lại bản ghi. Tính năng chấm phát âm đang chờ kiểm chứng.'}</AppText>
+      <AppText>{hasReference
+        ? `Hệ thống nghe được: ${assessment.heardText || example.word}. Đây chỉ là phản hồi tham khảo, không ảnh hưởng tiến độ học.`
+        : 'Bản ghi không được lưu hoặc tính là hoàn thành. Hãy kiểm tra âm thanh rồi thu lại.'}</AppText>
+      {hasReference && assessment.differences?.errors?.flatMap(error => error.phones ?? []).length
+        ? <AppText size={13} color={colors.muted}>Âm cần nghe lại: {assessment.differences.errors
+          .flatMap(error => error.phones ?? []).map(phone => `${phone.expected ?? '?'} → ${phone.heard ?? '?'}`).join(' · ')}</AppText>
+        : null}
     </AppCard>
     <PrimaryButton title="Luyện lại" onPress={() => {
       if (router.canGoBack()) router.back();
@@ -217,7 +242,7 @@ const styles = StyleSheet.create({
   content: { padding: 22, gap: 16 },
   practice: { flexGrow: 1, justifyContent: 'space-evenly' },
   center: { alignItems: 'center', gap: 10 },
-  illustration: { width: 230, height: 240, backgroundColor: colors.surface, borderRadius: 18 },
+  info: { marginLeft: 'auto', minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   audioGroup: { alignItems: 'center' },
   credits: { gap: 4, paddingTop: 6 },
   modalBackdrop: { flex: 1, backgroundColor: '#0008', justifyContent: 'center', padding: 20 },

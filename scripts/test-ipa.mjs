@@ -1,13 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 import { ipaSounds, findIpaSound } from '../src/features/ipa/catalogue.ts';
 import { recordingIssue } from '../src/features/ipa/recording-quality.ts';
 import { ipaWordAudio } from '../src/features/ipa/word-audio.ts';
+import { ipaAudioSource } from '../src/features/ipa/audio-source.ts';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('44 unique British English sounds with stable routes and two relevant examples each', () => {
   assert.equal(ipaSounds.length, 44);
@@ -25,14 +22,6 @@ test('44 unique British English sounds with stable routes and two relevant examp
   assert.equal(findIpaSound('unknown'), undefined);
 });
 
-test('all 44 routes have a verified local illustration and every referenced PNG exists', () => {
-  const source = readFileSync(resolve(root, 'src/features/ipa/illustrations.ts'), 'utf8');
-  for (const sound of ipaSounds) assert.ok(source.includes(`"${sound.id}":`), sound.id);
-  const assets = [...source.matchAll(/require\('\.\.\/\.\.\/\.\.\/assets\/ipa\/([^']+)'\)/g)];
-  assert.equal(assets.length, 44);
-  for (const [, filename] of assets) assert.ok(existsSync(resolve(root, 'assets/ipa', filename)), filename);
-});
-
 test('recorded example audio has HTTPS media, source, license and honest accent metadata', () => {
   assert.ok(Object.keys(ipaWordAudio).length > 0);
   for (const [word, item] of Object.entries(ipaWordAudio)) {
@@ -43,6 +32,19 @@ test('recorded example audio has HTTPS media, source, license and honest accent 
     assert.match(item.license, /^CC(?:0| BY)/);
     assert.match(item.licenseUrl, /^https:\/\/creativecommons\.org\//);
   }
+});
+
+test('all 88 IPA examples declare recorded, TTS or unavailable without relabeling recordings', () => {
+  const examples = ipaSounds.flatMap(sound => sound.examples);
+  const counts = { recorded: 0, tts: 0, unavailable: 0 };
+  for (const example of examples) {
+    const source = ipaAudioSource(example.word, ipaWordAudio[example.word]?.url);
+    counts[source] += 1;
+    assert.equal(source === 'recorded', Boolean(ipaWordAudio[example.word]?.url));
+  }
+  assert.equal(examples.length, 88);
+  assert.deepEqual(counts, { recorded: 37, tts: 51, unavailable: 0 });
+  assert.equal(ipaAudioSource(' '), 'unavailable');
 });
 
 test('recording checks reject missing, short, long, quiet and overloaded signals', () => {
