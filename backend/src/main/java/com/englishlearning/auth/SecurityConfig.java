@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/forgot-password", "/api/v1/auth/verify-reset-otp",
                                 "/api/v1/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/ipa/reference").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/decks", "/api/v1/decks/{id}",
                                 "/api/v1/decks/{id}/words").authenticated()
                         .requestMatchers("/api/v1/users/me", "/api/v1/users/me/profile", "/api/v1/users/me/password").authenticated()

@@ -68,4 +68,21 @@ export const apiClient = {
   post: <T>(path: string, body: unknown, token?: string) => request<T>('POST', path, body, token),
   patch: <T>(path: string, body: unknown, token: string) => request<T>('PATCH', path, body, token),
   delete: <T>(path: string, token: string) => request<T>('DELETE', path, undefined, token),
+  upload: async <T>(path: string, form: FormData, token: string): Promise<T> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
+    try {
+      const response = await fetch(`${getBaseUrl()}${path}`, { method: 'POST', body: form,
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }, signal: controller.signal });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({})) as { message?: string };
+        throw new ApiError(body.message ?? `Backend trả về HTTP ${response.status}.`, response.status);
+      }
+      return await response.json() as T;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError('Không gửi được bản ghi để chấm tham khảo.', undefined,
+        controller.signal.aborted ? 'TIMEOUT' : 'NETWORK_ERROR');
+    } finally { clearTimeout(timeout); }
+  },
 };

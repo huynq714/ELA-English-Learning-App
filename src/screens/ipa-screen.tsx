@@ -1,23 +1,29 @@
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { BottomNavigation } from '@/components/bottom-navigation';
-import { useDemoNotice } from '@/components/demo-notice';
 import { AppHeader, AppText, Screen, SegmentedControl } from '@/components/ui';
-import { vowelRows } from '@/data/demo';
+import { ipaSounds } from '@/features/ipa/catalogue';
 import { colors } from '@/theme/tokens';
 
 export default function IpaScreen() {
-  const notice = useDemoNotice();
+  const [tab, setTab] = useState(0);
+  const [selected, setSelected] = useState<string>();
+  const visible = ipaSounds.filter(sound => (sound.kind === 'consonant') === (tab === 1));
+  const rows = Array.from({ length: visible.length / 4 }, (_, index) => visible.slice(index * 4, index * 4 + 4));
   return <Screen testID="screen-ipa" header={<AppHeader title="Bảng phiên âm IPA" />}
     footer={<BottomNavigation active="ipa" />} contentStyle={styles.content}>
-    <SegmentedControl labels={['Nguyên âm', 'Phụ âm']} selected={0}
-      onPress={index => { if (index === 1) notice('Bảng phụ âm'); }} />
+    <SegmentedControl labels={['Nguyên âm', 'Phụ âm']} selected={tab} onPress={setTab} />
     <View style={styles.grid}>
-      {vowelRows.map((row, index) => <View key={index} style={styles.row}>
-        {row.map(sound => <Pressable key={sound} accessibilityRole="button" accessibilityLabel={`Âm ${sound}`}
-          accessibilityState={{ selected: sound === 'ɜː' }} onPress={() => notice(`Chi tiết phát âm ${sound}`)}
-          style={[styles.phoneme, sound === 'ɜː' && styles.selected]}>
-          <AppText size={25} color={sound === 'ɜː' ? colors.primary : colors.ink}>{sound}</AppText>
+      {rows.map((row, index) => <View key={index} style={styles.row}>
+        {row.map(sound => <Pressable key={sound.id} accessibilityRole="button" accessibilityLabel={`Âm ${sound.symbol}`}
+          accessibilityState={{ selected: selected === sound.id }} onPress={() => {
+            setSelected(sound.id);
+            router.push({ pathname: '/ipa-detail', params: { sound: sound.id } });
+          }} style={[styles.phoneme, selected === sound.id && styles.selected]}>
+          <AppText size={25} style={{ fontFamily: undefined }}
+            color={selected === sound.id ? colors.primary : colors.ink}>{sound.symbol}</AppText>
         </Pressable>)}
       </View>)}
     </View>
