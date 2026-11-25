@@ -45,8 +45,8 @@
       [
         "expo-audio",
         {
-          "microphonePermission": false,
-          "recordAudioAndroid": false,
+          "microphonePermission": "Cho phép ghi âm để luyện phát âm tiếng Anh.",
+          "recordAudioAndroid": true,
           "enableBackgroundPlayback": false
         }
       ]

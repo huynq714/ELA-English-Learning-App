@@ -70,6 +70,9 @@ function AppNavigator() {
       <Stack.Screen name="review" />
       <Stack.Screen name="review-session" />
       <Stack.Screen name="ipa" />
+      <Stack.Screen name="ipa-detail" />
+      <Stack.Screen name="ipa-practice" />
+      <Stack.Screen name="ipa-result" />
       <Stack.Screen name="ai" />
     </Stack.Protected>
   </Stack>;
