@@ -1,0 +1,15 @@
+{
+  "loginRendered": true,
+  "homeRendered": true,
+  "api": [
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/review/summary",
+      "status": 200
+    }
+  ],
+  "pageErrors": []
+}
