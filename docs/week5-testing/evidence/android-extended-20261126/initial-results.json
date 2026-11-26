@@ -1,0 +1,46 @@
+{
+  "device": "emulator-5554",
+  "results": [
+    {
+      "id": "EXT-QUIZ-01-study-gate",
+      "status": "PASS",
+      "detail": "Native UI assertions satisfied"
+    },
+    {
+      "id": "EXT-QUIZ-02-five-answers-result",
+      "status": "PASS",
+      "detail": "Five native answers submitted; one intentional wrong; UI and real API result agree on 4/5, 80%."
+    },
+    {
+      "id": "EXT-NET-01-offline",
+      "status": "PASS",
+      "detail": "Emulator Wi-Fi/data disabled; real catalogue reload shows network error and retry."
+    },
+    {
+      "id": "EXT-NET-02-recovery",
+      "status": "PASS",
+      "detail": "Network restored; retry recovers Decks without signing in again."
+    },
+    {
+      "id": "EXT-AUDIO-01-playback-telemetry",
+      "status": "PARTIAL",
+      "detail": "Both speaker controls exercised; Android player telemetry saved. No captured/independently listened output, so audio correctness NOT TESTED."
+    },
+    {
+      "id": "EXT-SIZE-320x568",
+      "status": "FAIL",
+      "detail": "UI element not found: Giao tiếp và cảm xúc"
+    },
+    {
+      "id": "EXT-SIZE-390x844",
+      "status": "PASS",
+      "detail": "Emulated 390x844 dp; navigation within viewport and Profile save accessible. Text visual QA separate."
+    },
+    {
+      "id": "EXT-SIZE-430x932",
+      "status": "PASS",
+      "detail": "Emulated 430x932 dp; navigation within viewport and Profile save accessible. Text visual QA separate."
+    }
+  ],
+  "limitations": "Quiz fixture learning is prepared via API, not certified as UI learning. Audio telemetry cannot certify intelligibility or correct pronunciation. Display sizes are emulator overrides, not separate real devices."
+}

@@ -1,0 +1,11 @@
+{
+  "device": "emulator-5554",
+  "results": [
+    {
+      "id": "EXT-SIZE-320x568-retest",
+      "status": "PASS",
+      "detail": "320x568 dp: catalogue reached; navigation in bounds; Profile save accessible. Earlier missing Deck assertion was caused by deep-link startup leaving Home active."
+    }
+  ],
+  "limitations": "Quiz fixture learning is prepared via API, not certified as UI learning. Audio telemetry cannot certify intelligibility or correct pronunciation. Display sizes are emulator overrides, not separate real devices."
+}

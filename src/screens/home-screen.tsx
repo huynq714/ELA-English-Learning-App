@@ -1,30 +1,40 @@
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { ActivityCard, AppCard, AppText, Asset, Screen } from '@/components/ui';
 import { useSession } from '@/features/auth/view-model/session-context';
+import { homeGreeting } from '@/features/home/greeting';
 import { useReviewSummary } from '@/features/review/use-review-summary';
 import { figmaAssets } from '@/theme/figma-assets';
 import { colors } from '@/theme/tokens';
 
 const assets = figmaAssets.home;
 
-function StatisticCard({ value, label, icon, onPress }:
-  { value: number | string; label: string; icon: number; onPress: () => void }) {
+function StatisticCard({ id, value, label, icon, compact, onPress }:
+  { id: string; value: number | string; label: string; icon: number; compact: boolean; onPress: () => void }) {
   return <Pressable accessibilityRole="button" onPress={onPress} style={styles.metricPressable}>
-    <AppCard style={styles.metric}>
+    <AppCard style={[styles.metric, compact && styles.metricCompact]}>
       <Asset source={icon} width={31} />
-      <View style={styles.metricText}>
-        <AppText size={27} weight="extrabold">{value}</AppText>
-        <AppText size={11} weight="semibold" color={colors.muted}>{label}</AppText>
+      <View style={[styles.metricText, compact && styles.metricTextCompact]}>
+        <AppText testID={`home-metric-${id}-value`} size={27} weight="extrabold"
+          numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{value}</AppText>
+        <AppText testID={`home-metric-${id}-label`} size={11} weight="semibold"
+          style={compact && styles.metricLabelCompact} color={colors.muted}>{label}</AppText>
       </View>
     </AppCard>
   </Pressable>;
 }
 
 export default function HomeScreen() {
-  const { width } = useWindowDimensions();
+  const [greeting, setGreeting] = useState(() => homeGreeting());
+  useEffect(() => {
+    const timer = setInterval(() => setGreeting(homeGreeting()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  const { width, fontScale } = useWindowDimensions();
+  const compactMetrics = width / fontScale < 400;
   const { state } = useSession();
   const { summary, pendingSessionId, error } = useReviewSummary();
   const landscapeWidth = Math.min(width, 480);
@@ -33,7 +43,7 @@ export default function HomeScreen() {
     <Asset source={assets.mountainLandscape} width={landscapeWidth} height={landscapeWidth * 268 / 375}
       style={styles.landscape} />
     <View style={styles.content}>
-      <AppText size={19} weight="bold" accessibilityRole="header">Chào buổi sáng, {state.user.displayName}! ☀️</AppText>
+      <AppText size={19} weight="bold" accessibilityRole="header">{greeting.text}, {state.user.displayName}! {greeting.icon}</AppText>
       <View style={styles.breathingRoom} />
       <AppCard style={styles.streak}>
         <View style={styles.streakIcon}><Asset source={assets.flame} width={34} /></View>
@@ -43,9 +53,9 @@ export default function HomeScreen() {
         </View>
       </AppCard>
       <View style={styles.metrics}>
-        <StatisticCard value={summary?.learnedCount ?? '–'} label="Đã học qua" icon={assets.bookOpen} onPress={() => router.navigate('/vocabulary')} />
-        <StatisticCard value={summary?.dueCount ?? '–'} label="Đến hạn ôn" icon={assets.layers} onPress={() => router.push('/review')} />
-        <StatisticCard value={summary?.cramCount ?? '–'} label="Ôn thêm" icon={assets.bookOpen} onPress={() => router.push('/review')} />
+        <StatisticCard id="learned" compact={compactMetrics} value={summary?.learnedCount ?? '–'} label="Đã học qua" icon={assets.bookOpen} onPress={() => router.navigate('/vocabulary')} />
+        <StatisticCard id="due" compact={compactMetrics} value={summary?.dueCount ?? '–'} label="Đến hạn ôn" icon={assets.layers} onPress={() => router.push('/review')} />
+        <StatisticCard id="cram" compact={compactMetrics} value={summary?.cramCount ?? '–'} label="Ôn thêm" icon={assets.bookOpen} onPress={() => router.push('/review')} />
       </View>
       <AppText size={19} weight="bold" accessibilityRole="header">Tiếp tục học</AppText>
       <View style={styles.activities}>
@@ -69,6 +79,9 @@ const styles = StyleSheet.create({
   metrics: { flexDirection: 'row', gap: 12 },
   metricPressable: { flex: 1, minWidth: 0 },
   metric: { minHeight: 88, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14 },
+  metricCompact: { flex: 1, flexDirection: 'column', alignItems: 'center', paddingHorizontal: 8 },
   metricText: { flex: 1, minWidth: 0, gap: 7 },
+  metricTextCompact: { flex: 0, width: '100%', alignItems: 'center' },
+  metricLabelCompact: { textAlign: 'center' },
   activities: { gap: 13 },
 });

@@ -1,0 +1,18 @@
+[
+  {
+    "button": "Nghe phát âm từ",
+    "playerTelemetry": [
+      "11-26 01:12:16:751 setCommunicationRouteForClient for pid: 3399 device: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] from API: setSpeakerphoneOn(true) from u/pid:10191/3399",
+      "11-26 01:12:16:788 updateCommunicationRoute, preferredCommunicationDevice: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] eventSource: setSpeakerphoneOn(true) from u/pid:10191/3399"
+    ]
+  },
+  {
+    "button": "Nghe câu ví dụ",
+    "playerTelemetry": [
+      "11-26 01:12:16:751 setCommunicationRouteForClient for pid: 3399 device: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] from API: setSpeakerphoneOn(true) from u/pid:10191/3399",
+      "11-26 01:12:16:788 updateCommunicationRoute, preferredCommunicationDevice: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] eventSource: setSpeakerphoneOn(true) from u/pid:10191/3399",
+      "11-26 01:12:24:289 setCommunicationRouteForClient for pid: 3399 device: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] from API: setSpeakerphoneOn(true) from u/pid:10191/3399",
+      "11-26 01:12:24:290 updateCommunicationRoute, preferredCommunicationDevice: AudioDeviceAttributes: role:output type:speaker addr: name: profiles:[] descriptors:[] eventSource: setSpeakerphoneOn(true) from u/pid:10191/3399"
+    ]
+  }
+]

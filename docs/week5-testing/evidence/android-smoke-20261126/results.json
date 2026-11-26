@@ -1,0 +1,72 @@
+{
+  "device": "emulator-5554",
+  "results": [
+    {
+      "id": "AND-01-login-entry",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 7.48
+    },
+    {
+      "id": "AND-02-empty-login",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 5.87
+    },
+    {
+      "id": "AND-03-wrong-password",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 19.08
+    },
+    {
+      "id": "AND-04-valid-login",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 17.03
+    },
+    {
+      "id": "AND-05-a1-catalogue",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 11.41
+    },
+    {
+      "id": "AND-06-empty-search",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 8.07
+    },
+    {
+      "id": "AND-07-search-recovery",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 7.78
+    },
+    {
+      "id": "AND-08-flip-card",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 14.75
+    },
+    {
+      "id": "AND-09-bookmark",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 5.82
+    },
+    {
+      "id": "AND-10-saved-list",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 12.06
+    },
+    {
+      "id": "AND-11-unbookmark",
+      "status": "PASS",
+      "detail": "Expected native UI assertions satisfied",
+      "seconds": 18.05
+    }
+  ],
+  "limitations": "UI only; no audio listening, Gmail OTP, real-device or multi-size certification."
+}

@@ -1,0 +1,45 @@
+{
+  "device": "emulator-5554",
+  "results": [
+    {
+      "id": "HOME-320x568",
+      "status": "PASS",
+      "detail": {
+        "sizeDp": "320x568",
+        "realCounts": {
+          "learned": "15",
+          "due": "15",
+          "cram": "15"
+        },
+        "checks": "Single-line numeric height, caption height/text, in-bounds, no value/caption overlap. Screenshots also require visual review."
+      }
+    },
+    {
+      "id": "HOME-390x844",
+      "status": "PASS",
+      "detail": {
+        "sizeDp": "390x844",
+        "realCounts": {
+          "learned": "15",
+          "due": "15",
+          "cram": "15"
+        },
+        "checks": "Single-line numeric height, caption height/text, in-bounds, no value/caption overlap. Screenshots also require visual review."
+      }
+    },
+    {
+      "id": "HOME-430x932",
+      "status": "PASS",
+      "detail": {
+        "sizeDp": "430x932",
+        "realCounts": {
+          "learned": "15",
+          "due": "15",
+          "cram": "15"
+        },
+        "checks": "Single-line numeric height, caption height/text, in-bounds, no value/caption overlap. Screenshots also require visual review."
+      }
+    }
+  ],
+  "limitations": "Quiz fixture learning is prepared via API, not certified as UI learning. Audio telemetry cannot certify intelligibility or correct pronunciation. Display sizes are emulator overrides, not separate real devices."
+}
